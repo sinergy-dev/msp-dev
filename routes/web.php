@@ -206,6 +206,8 @@ Route::group(['middleware' => ['MSP']], function () {
 	Route::post('/add_id_pro','WarehouseProjectController@add_id_project');
 	Route::get('/getleadpid','SalesController@getleadpid');
 	Route::post('/update_result_idpro', 'SalesController@update_result_request_id');
+	Route::get('/getIdProject', 'SalesController@getidproject');
+	Route::post('/store_po', 'SalesController@store_po');
 
 
 	Route::post('/engineer_assign','EngineerController@store');

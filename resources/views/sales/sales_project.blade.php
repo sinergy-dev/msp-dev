@@ -250,12 +250,22 @@
                         <th>Project Name</th>
                         <th>Note</th>
                         <th>Sales</th>
+                        @if(Auth::User()->email == 'fuad@solusindoperkasa.co.id')
+                        <th>Action</th>
+                        @endif
                       </tr>
                     </thead>
                     <tbody id="products-list" name="products-list">
                       @foreach($salesmsp as $data)
                       <tr>
                         <td>{{$data->date}}</td>
+                        <!-- <td>
+                          @if($data->id_customer == '33' || $data->lead_id == 'MSPQUO')
+                          <a id="details_id_pro" data-target="" data-toggle="modal" value="{{$data->id_project}}">{{$data->id_project}}</a>
+                          @else
+                          {{$data->id_project}}
+                          @endif
+                        </td> -->
                         <td>{{$data->id_project}}</td>
                         <td>{{$data->lead_id}}</td>
                         <td>
@@ -264,6 +274,7 @@
                         @else
                         {{$data->no_po}}
                         @endif
+                        
                         </td>
                         <td>
                           @if($data->lead_id == "MSPQUO")
@@ -294,6 +305,15 @@
                           {{$data->name}}
                           @endif
                         </td>
+                        @if(Auth::User()->email == 'fuad@solusindoperkasa.co.id')
+                        <td>
+                          @if($data->id_customer == '33')
+                          <button class="btn btn-xs btn-success" style="width:35px;height:30px;border-radius: 25px!important;outline: none;" id="details_id_pro" value="{{$data->id_pro}}"><i class="fa fa-edit" data-toggle="tooltip" title="Tambah PO" data-placement="bottom"></i></button>   
+                          @else
+                          <button class="btn btn-xs btn-success" style="width:35px;height:30px;border-radius: 25px!important;outline: none;" disabled><i class="fa fa-edit" data-toggle="tooltip" data-placement="bottom"></i></button>
+                          @endif                       
+                        </td>
+                        @endif
                       </tr>
                       @endforeach
                     </tbody>
@@ -364,6 +384,40 @@
 
     </div>
   </div>
+
+<div class="modal fade" id="modal_tambah_po" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Add PO</h4>
+      </div>
+      <div class="modal-body">
+        <form method="POST" action="{{url('store_po')}}" id="modal_update" name="modalProgress">
+        @csrf
+        <input type="text" name="id_pro" id="id_pro" hidden>
+        <input type="text" name="id_pid" id="id_pid" hidden>
+        <div class="form-group">
+          <label for="">Id Project</label>
+          <input type="text" id="inputProjectId" class="form-control" readonly>
+        </div>
+        <div class="form-group">
+          <label for="">Project Name</label>
+          <input type="text" id="inputProjectName" class="form-control" readonly>
+        </div>
+        <div class="form-group">
+          <label for="">No PO</label>
+          <input type="text" placeholder="Enter Note" name="inputNoPo" id="inputNoPo" class="form-control">
+        </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" data-dismiss="modal"><i class=" fa fa-times">&nbsp</i>Close</button>
+        <button class="btn btn-primary-custom" ><i class="fa fa-check">&nbsp</i>Submit</button>
+      </div>
+      </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <div class="modal fade" id="requestProjectID" role="dialog">
   <div class="modal-dialog">
@@ -750,6 +804,26 @@
     // console.log($("#inputAmount").val())
     // console.log($("#inputNote").val())
   }
+
+  $(document).on('click',"#details_id_pro",function(e) { 
+      // console.log(this.value);
+      $.ajax({
+          type:"GET",
+          url:"{{url('/getIdProject')}}",
+          data:{
+            id_pro:this.value,
+          },
+          success: function(result){
+            $('#id_pro').val(result[0].id_pro);
+            $('#id_pid').val(result[0].id_pid);
+            $('#inputProjectId').val(result[0].id_project);
+            $('#inputProjectName').val(result[0].name_project);
+            $('#inputNoPo').val(result[0].no_po_customer);
+          },
+      });
+
+      $('#modal_tambah_po').modal('show')
+  });
 
      $('.money').mask('000,000,000,000,000,000', {reverse: true});
 
