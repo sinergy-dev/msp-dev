@@ -1,185 +1,127 @@
 @extends('template.template_admin-lte')
 @section('content')
-<style type="text/css">
-  .DTFC_LeftBodyLiner{overflow-y:unset !important}
-  .DTFC_RightBodyLiner{overflow-y:unset !important}
-
-
-  .radios {
-    display: block;
-    position: relative;
-    padding-left: 35px;
-    margin-bottom: 12px;
-    cursor: pointer;
-    font-size: 14px;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-  }
-
-  /* Hide the browser's default radio button */
-  .radios input {
-    position: absolute;
-    opacity: 0;
-    cursor: pointer;
-  }
-
-  /* Create a custom radio button */
-  .checkmark {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 25px;
-    width: 25px;
-    background-color: #eee;
-    border-radius: 50%;
-  }
-
-  /* On radiosmouse-over, add a grey background color */
-  .radios:hover input ~ .checkmark {
-    background-color: #ccc;
-  }
-
-  /* When the radio button is checked, add a blue background */
-  .radios input:checked ~ .checkmark {
-    background-color: #2196F3;
-  }
-
-  /* Create the indicator (the dot/circle - hidden when not checked) */
-  .checkmark:after {
-    content: "";
-    position: absolute;
-    display: none;
-  }
-
-  /* Show the indicator (dot/circle) when checked */
-  .radios input:checked ~ .checkmark:after {
-    display: block;
-  }
-
-  /* Style the indicator (dot/circle) */
-  .radios .checkmark:after {
-    top: 9px;
-    left: 9px;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: white;
-  }
-</style>
 
 <section class="content-header">
   <h1>
-    ID Project
+    Id Project Mapping
   </h1>
   <ol class="breadcrumb">
-    <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
-    <li class="active">ID Project</li>
+    <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
+    <li class="active">Delivery Person</li>
+    <li class="active">SIP</li>
   </ol>
 </section>
 
 <section class="content">
-  @if (session('success'))
-    <div class="alert alert-success notification-bar"><span>Notice : </span> {{ session('success') }}<button type="button" class="dismisbar transparant pull-right"><i class="fa fa-times fa-lg"></i></button><br>Get your PID :<h4> {{$pops->id_project}}</h4></div>
-  @elseif (session('error'))
-    <div class="alert alert-danger notification-bar" id="alert"><span>notice: </span> {{ session('error') }}.</div>
-  @endif
+  <div class="box">
+      <div class="box-header with-border">
+        <h3 class="box-title"><i class="fa fa-table"></i>&nbsp<b>Id Project</b></h3>
 
-    <div class="box-body">
-      <div class="nav-tabs-custom" style="padding: 25px">
-        <ul class="nav nav-tabs">
-          <li class="active"><a href="#tab_1" data-toggle="tab">ID Project</a></li>
-          <!-- <li><a href="#tab_2" data-toggle="tab">Request ID</a></li> -->
-          </ul>
-        </ul>
-        <div class="tab-content">
-          <div class="tab-pane active" id="tab_1">
-            @if(Auth::User()->id_company == '2')
-              <div class="table-responsive">
-                <table class="table table-bordered table-striped display nowrap dataTable" id="msp-prj" width="100%" cellspacing="0">
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>ID Project</th>
-                      <th>Lead ID</th>
-                      <th>NO. PO Customer</th>
-                      <th>Quotation</th>
-                      <th>Customer Name</th>
-                      <th>Project Name</th>
-                      <th>Note</th>
-                      <th>Sales</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody id="products-list" name="products-list">
-                    <tr>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td>
-                      </td>
-                      <td>
-                      </td>
-                      <td>
-                      </td>
-                      <td>
-                      </td>
-                      <td></td>
-                      <td>
-                      </td>
-                      <td>                      
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+      </div>
+
+      <div class="box-body">
+        <div style="margin-bottom: 10px">
+          <button class="btn btn-success btn-sm add-messenger" data-toggle="modal" data-target="#modaltambahmapping" style="width: 70px;"><i class="fa fa-plus"></i> Add</button>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="nav-tabs-custom">
+              <ul class="nav nav-tabs" id="myTab">
+                    <!-- <li class="nav-item active">
+                        <a class="nav-link" id="all" data-toggle="tab" href="#all" role="tab" aria-controls="all" aria-selected="true" onclick="changeTerritory('today')">
+                            Today
+                        </a>
+                    </li>
+                    <li>
+                      <a class="nav-link" id="all" data-toggle="tab" href="#all" role="tab" aria-controls="all" aria-selected="true" onclick="changeTerritory('done')">
+                            Done
+                        </a>
+                    </li>
+                    <li>
+                      <a class="nav-link" id="all" data-toggle="tab" href="#all" role="tab" aria-controls="all" aria-selected="true" onclick="changeTerritory('requested')">
+                            Requested
+                        </a>
+                    </li> -->
+                </ul>
+                <div class="tab-content">
+                  <div class="tab-pane active"  role="tabpanel" >
+                    <div class="table-responsive">
+                       <table class="table table-bordered table-striped dataTable" id="data_po" width="100%" cellspacing="0">
+                        <thead>
+                          <tr>
+                            <th></th>
+                            <th>No</th>
+                            <th>No PO</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <?php $no = 1?>
+                          @foreach($data as $data)
+                          <tr>
+                            <td></td>
+                            <td>{{$no++}}</td>
+                            <td>{{$data->no_po}}</td>
+                          </tr>
+                          @endforeach
+                        </tbody>
+                       </table>
+                    </div>
+                  </div>
+                </div>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+
+    </div>
+
+    <!--modal add-->
+    <div class="modal fade" id="modaltambahmapping" role="dialog">
+      <div class="modal-dialog modal-md">
+        <!-- Modal content-->
+        <div class="modal-content modal-md">
+          <div class="modal-header">
+            <h4 class="modal-title">Add Mapping Id Project</h4>
+          </div>
+          <div class="modal-body">
+            <form method="POST" action="{{url('/store_po_idpro')}}" id="" name="">
+              @csrf
+
+              <div class="form-group">
+                <label>No PO</label>
+                <select class="form-control" id="no_po" name="no_po" style="width: 100%">
+                  <option>Select No PO</option>
+                  @foreach($no_po as $data)
+                  <option value="{{$data->id}}">{{$data->no_po}}</option>
+                  @endforeach
+                </select>
               </div>
-            @endif
+
+              <div class="form-group">
+                <label>ID Project</label>
+                <select class="form-control" id="id_project" name="id_project" style="width: 100%">
+                  <option>Select Id Project</option>
+                  @foreach($id_pro as $data)
+                  <option value="{{$data->id_project}}">{{$data->id_project}}</option>
+                  @endforeach
+                </select>
+              </div>
+
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal"><i class=" fa fa-times"></i>&nbspClose</button>
+                <button type="submit" class="btn btn-primary btn-submit"><i class="fa fa-check"> </i>&nbspSubmit</button>
+              </div>
+          </form>
           </div>
         </div>
       </div>
-
     </div>
-  </div>
-
-<div class="modal fade" id="modal_tambah_po" role="dialog">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title">Add PO</h4>
-      </div>
-      <div class="modal-body">
-        <form method="POST" action="{{url('store_po')}}" id="modal_update" name="modalProgress">
-        @csrf
-        <input type="text" name="id_pro" id="id_pro" hidden>
-        <input type="text" name="id_pid" id="id_pid" hidden>
-        <div class="form-group">
-          <label for="">Id Project</label>
-          <input type="text" id="inputProjectId" class="form-control" readonly>
-        </div>
-        <div class="form-group">
-          <label for="">Project Name</label>
-          <input type="text" id="inputProjectName" class="form-control" readonly>
-        </div>
-        <div class="form-group">
-          <label for="">No PO</label>
-          <input type="text" placeholder="Enter Note" name="inputNoPo" id="inputNoPo" class="form-control">
-        </div>
-      <div class="modal-footer">
-        <button class="btn btn-default" data-dismiss="modal"><i class=" fa fa-times">&nbsp</i>Close</button>
-        <button class="btn btn-primary-custom" ><i class="fa fa-check">&nbsp</i>Submit</button>
-      </div>
-      </form>
-      </div>
-    </div>
-  </div>
-</div>
-
-
 </section>
 
-@endsection
 
+@endsection
 @section('script')
   <script type="text/javascript" src="{{asset('js/select2.min.js')}}"></script>
   <script type="text/javascript" src="{{asset('js/jquery.mask.min.js')}}"></script>
@@ -187,76 +129,93 @@
   <script type="text/javascript" src="{{asset('js/dataTables.fixedColumns.min.js')}}"></script>
   <script type="text/javascript">
 
-  $(document).on('click',"#details_id_pro",function(e) { 
-      // console.log(this.value);
-      $.ajax({
-          type:"GET",
-          url:"{{url('/getIdProject')}}",
-          data:{
-            id_pro:this.value,
-          },
-          success: function(result){
-            $('#id_pro').val(result[0].id_pro);
-            $('#id_pid').val(result[0].id_pid);
-            $('#inputProjectId').val(result[0].id_project);
-            $('#inputProjectName').val(result[0].name_project);
-            $('#inputNoPo').val(result[0].no_po_customer);
-          },
-      });
+    $('#no_po').select2();
+    $('#id_project').select2();
 
-      $('#modal_tambah_po').modal('show')
-  });
+    initdata();
 
-     $('.money').mask('000,000,000,000,000,000', {reverse: true});
-
-     $('#sip-data').DataTable({
-        "scrollX": true,
-        "retrieve": true,
-        "order": [[ 1, "desc" ]],
-        fixedColumns:   {
-          leftColumns: 2
-        },
-      });
-
-     $('#sip-prj').DataTable({
-        "scrollX": true,
-        "retrieve": true,
-        "order": [[ 1, "desc" ]],
-        fixedColumns:   {
-          leftColumns: 2
-        },
-      });
-
-     $('#requestProjectID-table').DataTable({
-        "scrollX": true,
-        "retrieve": true,
-      });
-
-     $('#msp-data').DataTable({
-      "order": [[ 1, "desc" ]],
-      "scrollX": true,
-      "paging": true,
-      "retrieve": true,
-      });
-
-
-     $('#msp-prj').DataTable({
-        "retrieve": true,
-        "order": [[ 1, "desc" ]],
-        "scrollX": true,
-        fixedColumns:   {
-        leftColumns: 2
+    function initdata(){
+    $("#data_po").DataTable({
+      "ajax":{
+        "type":"GET",
+        "url":"{{url('budget/note/getDataNote')}}",
+        "dataSrc": function (json){
+          // switch between locales
+          numeral.locale('id');
+          json.data.forEach(function(data,index){
+            data.month = moment(data.date,'YYYY-MM-DD').format('MMMM YYYY');
+            data.timestamp = moment(data.date,'YYYY-MM-DD').format('X');
+            data.date = moment(data.date,'YYYY-MM-DD').format('D MMMM YYYY');
+            data.nominal_formated = numeral(data.nominal).format('$0,0.00');
+            data.details_controls = "<i class='fa fa-plus'></i>";
+            data.PID = data.customer + " - " + data.PID;
+            // data.status = "Active"
+          });
+          return json.data;
+        }
       },
-      });
-
-      $('#lead_id_manual').select2();
-
-      $("#alert").fadeTo(2000, 500).slideUp(500, function(){
-        $("#alert").slideUp(300);
-      });
-
-      $(".dismisbar").click(function(){
-         $(".notification-bar").slideUp(300);
-      }); 
+      "rowGroup": {
+              "dataSrc": "month",
+              "enable": false,
+          },
+      "columns": [
+        {
+          "className": 'details-control',
+          "orderable": false,
+          "data": "details_controls",
+          "defaultContent": ''
+        },
+        { 
+          "data": "date",
+          "className": "text-right",
+          "orderData" : [ 8 ],
+          "targets" : [ 1 ],
+        },
+        { "data": "document" },
+        { "data": "issuer" },
+        { "data": "purpose" },
+        { "data": "detail" },
+        { 
+          "data": "nominal_formated",
+          "className": "text-right",
+          "orderData" : [ 7 ],
+          "targets" : [ 1 ],
+        },
+        { 
+          "data": "nominal",
+          "targets": [ 7 ] ,
+          "visible": false ,
+          "searchable": true
+        },
+        { 
+          "data": "timestamp", 
+          "targets": [ 8 ] ,
+          "visible": false ,
+          "searchable": true
+        },
+        { 
+          "data": "PID",
+          "visible": false ,
+          "searchable": true
+        },
+        { 
+          "data": "customer",
+          "visible": false ,
+          "searchable": true
+        },
+        { 
+          "data": "month",
+          "visible": false ,
+          "searchable": true
+        },
+      ],
+      "searching": true,
+      "lengthChange": false,
+      // "paging": false,
+      "info":false,
+      "scrollX": false,
+      "order": [[ 1, "desc" ]]
+    })
+  }
   </script>
 @endsection

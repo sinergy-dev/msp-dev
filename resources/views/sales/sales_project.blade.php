@@ -259,13 +259,6 @@
                       @foreach($salesmsp as $data)
                       <tr>
                         <td>{{$data->date}}</td>
-                        <!-- <td>
-                          @if($data->id_customer == '33' || $data->lead_id == 'MSPQUO')
-                          <a id="details_id_pro" data-target="" data-toggle="modal" value="{{$data->id_project}}">{{$data->id_project}}</a>
-                          @else
-                          {{$data->id_project}}
-                          @endif
-                        </td> -->
                         <td>{{$data->id_project}}</td>
                         <td>{{$data->lead_id}}</td>
                         <td>
@@ -307,7 +300,7 @@
                         </td>
                         @if(Auth::User()->email == 'fuad@solusindoperkasa.co.id')
                         <td>
-                          @if($data->id_customer == '33')
+                          @if($data->id_customer == '33' || $data->lead_id == 'MSPQUO')
                           <button class="btn btn-xs btn-success" style="width:35px;height:30px;border-radius: 25px!important;outline: none;" id="details_id_pro" value="{{$data->id_pro}}"><i class="fa fa-edit" data-toggle="tooltip" title="Tambah PO" data-placement="bottom"></i></button>   
                           @else
                           <button class="btn btn-xs btn-success" style="width:35px;height:30px;border-radius: 25px!important;outline: none;" disabled><i class="fa fa-edit" data-toggle="tooltip" data-placement="bottom"></i></button>
@@ -806,12 +799,12 @@
   }
 
   $(document).on('click',"#details_id_pro",function(e) { 
-      // console.log(this.value);
+      console.log(this.value);
       $.ajax({
           type:"GET",
-          url:"{{url('/getIdProject')}}",
+          url:"{{url('getIdProject')}}",
           data:{
-            id_pro:this.value,
+            id_project:this.value,
           },
           success: function(result){
             $('#id_pro').val(result[0].id_pro);
