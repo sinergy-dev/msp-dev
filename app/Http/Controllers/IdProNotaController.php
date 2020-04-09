@@ -23,6 +23,7 @@ class IdProNotaController extends Controller
                     ->where('users.id_company', '2')
                     ->whereYear('tb_id_project.created_at',date('Y'))
                     ->where('status', '!=', 'WO')
+                    ->where('status_po', NULL)
                     ->get();
 
     	return view('sales/id_project_nota',compact('data', 'no_po', 'id_pro'));
@@ -36,6 +37,12 @@ class IdProNotaController extends Controller
     	$tambah->lokasi = $request['lokasi'];
     	$tambah->nik = Auth::User()->nik;
     	$tambah->save();
+
+    	$id_project = $request['id_project'];
+
+    	$update_status = SalesProject::where('id_project',$id_project)->first();
+    	$update_status->status_po = 'used';
+    	$update_status->update();
 
     	return redirect('po_id_pro')->with('success', 'Successfully!');
     }
