@@ -604,4 +604,5 @@ Route::group(['middleware' => ['MSP']], function () {
 
 	Route::get('/po_id_pro', 'IdProNotaController@index');
 	Route::post('/store_po_idpro', 'IdProNotaController@store');
+	Route::get('/getdatapo', 'IdProNotaController@getdata');
 });

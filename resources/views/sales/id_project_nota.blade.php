@@ -1,6 +1,24 @@
 @extends('template.template_admin-lte')
 @section('content')
 
+<style type="text/css">
+  td.details-control {
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer;
+  }
+
+  .header{
+    background-color: #dddddd;
+  }
+
+  /*.header th:nth-child(2){
+    background-color: #dddddd;
+  }*/
+
+
+</style>
+
 <section class="content-header">
   <h1>
     Id Project Mapping
@@ -49,21 +67,13 @@
                     <div class="table-responsive">
                        <table class="table table-bordered table-striped dataTable" id="data_po" width="100%" cellspacing="0">
                         <thead>
-                          <tr>
-                            <th></th>
-                            <th>No</th>
+                          <tr class="header">
                             <th>No PO</th>
+                            <th>Id Project</th>
+                            <th>Lokasi</th>
                           </tr>
                         </thead>
                         <tbody>
-                          <?php $no = 1?>
-                          @foreach($data as $data)
-                          <tr>
-                            <td></td>
-                            <td>{{$no++}}</td>
-                            <td>{{$data->no_po}}</td>
-                          </tr>
-                          @endforeach
                         </tbody>
                        </table>
                     </div>
@@ -109,6 +119,11 @@
                 </select>
               </div>
 
+              <div class="form-group">
+                <label>Lokasi</label>
+                <input type="text" name="lokasi" id="lokasi" class="form-control">
+              </div>
+
               <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal"><i class=" fa fa-times"></i>&nbspClose</button>
                 <button type="submit" class="btn btn-primary btn-submit"><i class="fa fa-check"> </i>&nbspSubmit</button>
@@ -134,88 +149,76 @@
 
     initdata();
 
+    /*$('#data_po tbody').on('click', 'td.details-control', function () {
+      var tr = $(this).closest('tr');
+      var row = $("#data_po").DataTable().row( tr );
+      if ( row.child.isShown() ) {
+        row.child.hide();
+        tr.removeClass('shown');
+        $(this).closest('tr > td').children().attr("class","fa fa-plus");
+      }
+      else {
+        var tr2 = $(this).closest('tr > td').children()
+        // console.log($(this))
+        $.ajax({
+          type:"GET",
+          url:"{{url('')}}",
+          data:{
+            id:row.data().id
+          },
+          success:function(result){
+            // console.log('asdfadf')
+            row.child( format(row.data(),result)).show();
+            tr.addClass('shown');
+            tr2.attr("class","fa fa-minus");
+          }
+        })
+        
+      }
+    });*/
+
     function initdata(){
     $("#data_po").DataTable({
       "ajax":{
         "type":"GET",
-        "url":"{{url('budget/note/getDataNote')}}",
+        "url":"{{url('getdatapo')}}",
         "dataSrc": function (json){
-          // switch between locales
-          numeral.locale('id');
-          json.data.forEach(function(data,index){
-            data.month = moment(data.date,'YYYY-MM-DD').format('MMMM YYYY');
-            data.timestamp = moment(data.date,'YYYY-MM-DD').format('X');
-            data.date = moment(data.date,'YYYY-MM-DD').format('D MMMM YYYY');
-            data.nominal_formated = numeral(data.nominal).format('$0,0.00');
-            data.details_controls = "<i class='fa fa-plus'></i>";
-            data.PID = data.customer + " - " + data.PID;
-            // data.status = "Active"
-          });
-          return json.data;
-        }
+            no = 1;
+            json.data.forEach(function(data,index){
+              data.index = no;
+              no++;
+            });
+            return json.data;
+          }
       },
-      "rowGroup": {
-              "dataSrc": "month",
-              "enable": false,
-          },
       "columns": [
-        {
-          "className": 'details-control',
-          "orderable": false,
-          "data": "details_controls",
-          "defaultContent": ''
-        },
-        { 
-          "data": "date",
-          "className": "text-right",
-          "orderData" : [ 8 ],
-          "targets" : [ 1 ],
-        },
-        { "data": "document" },
-        { "data": "issuer" },
-        { "data": "purpose" },
-        { "data": "detail" },
-        { 
-          "data": "nominal_formated",
-          "className": "text-right",
-          "orderData" : [ 7 ],
-          "targets" : [ 1 ],
-        },
-        { 
-          "data": "nominal",
-          "targets": [ 7 ] ,
-          "visible": false ,
-          "searchable": true
-        },
-        { 
-          "data": "timestamp", 
-          "targets": [ 8 ] ,
-          "visible": false ,
-          "searchable": true
-        },
-        { 
-          "data": "PID",
-          "visible": false ,
-          "searchable": true
-        },
-        { 
-          "data": "customer",
-          "visible": false ,
-          "searchable": true
-        },
-        { 
-          "data": "month",
-          "visible": false ,
-          "searchable": true
-        },
+        {"data": "no_po"},
+        { "data": "id_project"},
+        { "data": "lokasi" },
       ],
       "searching": true,
       "lengthChange": false,
-      // "paging": false,
       "info":false,
       "scrollX": false,
-      "order": [[ 1, "desc" ]]
+      "order": [[ 1, "asc" ]],
+
+      "drawCallback": function ( settings ) {
+        var api = this.api(),data;
+        var rows = api.rows( {page:'current'} ).nodes();
+        var last=null;
+        api.column(0, {page:'current'} ).data().each( function ( group, i ) {
+              if ( last !== group ) {
+                  $(rows).eq( i ).before(
+                      '<tr class="group"><td colspan="3">'+'<b>'+group+'</b>'+'</td></tr>'
+                  );
+                  last = group;
+              }
+        });
+
+      }
     })
   }
+
+  
   </script>
 @endsection
