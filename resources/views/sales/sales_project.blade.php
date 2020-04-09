@@ -811,7 +811,7 @@
             $('#id_pid').val(result[0].id_pid);
             $('#inputProjectId').val(result[0].id_project);
             $('#inputProjectName').val(result[0].name_project);
-            $('#inputNoPo').val(result[0].no_po_customer);
+            $('#inputNoPo').val(result[0].no_po);
           },
       });
 

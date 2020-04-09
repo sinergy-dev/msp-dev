@@ -70,7 +70,9 @@
                           <tr class="header">
                             <th>No PO</th>
                             <th>Id Project</th>
-                            <th>Lokasi</th>
+                            <th>Location</th>
+                            <th>Created By</th>
+                            <th>Date</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -192,9 +194,11 @@
           }
       },
       "columns": [
-        {"data": "no_po"},
-        { "data": "id_project"},
+        { "data": "no_po" },
+        { "data": "id_project" },
         { "data": "lokasi" },
+        { "data": "name" },
+        { "data": "created_at" }
       ],
       "searching": true,
       "lengthChange": false,

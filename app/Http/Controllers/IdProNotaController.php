@@ -34,6 +34,7 @@ class IdProNotaController extends Controller
     	$tambah->id_po = $request['no_po'];
     	$tambah->id_project = $request['id_project'];
     	$tambah->lokasi = $request['lokasi'];
+    	$tambah->nik = Auth::User()->nik;
     	$tambah->save();
 
     	return redirect('po_id_pro')->with('success', 'Successfully!');
@@ -41,6 +42,6 @@ class IdProNotaController extends Controller
 
     public function getdata(Request $request)
     {
-    	return array("data" => PoIdProject::join('tb_po_nota', 'tb_po_nota.id', '=', 'tb_po_id_project.id_po')->select('tb_po_nota.id', 'id_project', 'tb_po_nota.no_po', 'tb_po_id_project.id_po', 'lokasi')->get());
+    	return array("data" => PoIdProject::join('tb_po_nota', 'tb_po_nota.id', '=', 'tb_po_id_project.id_po')->join('users', 'users.nik', '=', 'tb_po_id_project.nik')->select('tb_po_nota.id', 'id_project', 'tb_po_nota.no_po', 'tb_po_id_project.id_po', 'lokasi', 'name', 'tb_po_id_project.created_at')->get());
     }
 }
