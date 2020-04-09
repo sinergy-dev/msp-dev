@@ -13,6 +13,7 @@
 
 Auth::routes();
 
+
 Route::group(['middleware' => ['MSP']], function () {
 
 	Route::get('/sorry_this_page_is_under_maintenance','DASHBOARDController@maintenance');
