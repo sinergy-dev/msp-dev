@@ -600,7 +600,7 @@
 
 
 
-      @if(Auth::User()->id_division != 'PMO')
+      @if(Auth::User()->id_division == 'SALES' || Auth::User()->id_position == 'DIRECTOR' || Auth::User()->id_position == 'MANAGER' && Auth::User()->id_division == 'TECHNICAL' || Auth::User()->id_division == 'TECHNICAL PRESALES' || Auth::User()->id_division == 'FINANCE' && Auth::User()->id_position == 'MANAGER')
       <li class="treeview activeable">
       	<a href="#SalesMSP" data-parent="#exampleAccordion">
       		<i class="fa fa-fw fa-table"></i>
@@ -618,10 +618,6 @@
       		<li>
       			<a href="{{url('/project')}}" style="font-size: 14px">Lead Register</a>
       		</li>
-      		@elseif(Auth::User()->id_division == 'MSM' && Auth::User()->id_position == 'MANAGER')
-      		<li>
-      			<a href="{{url('/project')}}" style="font-size: 14px">Lead Register</a>
-      		</li>
       		@elseif(Auth::User()->id_division == 'SALES')
       		<li>
       			<a href="{{url('/project')}}" style="font-size: 14px">Lead Register</a>
@@ -633,17 +629,6 @@
 			@elseif(Auth::User()->id_division == 'FINANCE' && Auth::User()->id_position == 'MANAGER')
 			<li>
       			<a href="{{url('/project')}}" style="font-size: 14px">Lead Register</a>
-      		</li>
-      		@endif
-
-      		<!-- @if(Auth::User()->id_position != 'HR MANAGER')
-      		<li>
-      			<a href="{{url('/customer')}}" style="font-size: 14px">Customer Data</a>
-      		</li>
-      		@endif -->
-      		@if(Auth::User()->id_company == '1')
-      		<li>
-      			<a href="{{url('/partnership')}}" style="font-size: 14px">Partnership</a>
       		</li>
       		@endif
       	</ul>
