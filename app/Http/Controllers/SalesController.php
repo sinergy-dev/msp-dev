@@ -1442,12 +1442,15 @@ class SALESController extends Controller
                     }
                     $update_status_quo->update();
 
-                    $cek_po = PID::select('no_po')->where('lead_id', $lead_id)->first();
-                    $tambah_po = new PoNota();
-                    if ($cek_po->no_po != null) {
-                        $tambah_po->no_po = $request['no_po'];
+                    if ($request['no_po'] != null) {
+                        $cek_po = PID::select('no_po')->where('lead_id', $lead_id)->first();
+                        $tambah_po = new PoNota();
+                        if ($cek_po->no_po != null) {
+                            $tambah_po->no_po = $request['no_po'];
+                        }
+                        $tambah_po->save();
                     }
-                    $tambah_po->save();
+                    
                     
                 } elseif($request['result'] == 'LOSE'){
                     $tambah->status = 'Update LOSE';
