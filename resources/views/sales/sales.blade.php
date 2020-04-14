@@ -1721,7 +1721,9 @@
       startDate: today
     })
 
-    $('#closing_date_edit').datepicker()
+    $('#closing_date_edit').datepicker({
+      startDate: today
+    })
 
     $('#add_lead').click(function(){
       $('#tunggu').modal('show')

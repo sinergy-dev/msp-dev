@@ -622,6 +622,9 @@
       		<li>
       			<a href="{{url('/project')}}" style="font-size: 14px">Lead Register</a>
       		</li>
+      		<li>
+      			<a href="{{url('/customer')}}" style="font-size: 14px">Customer Data</a>
+      		</li>
 			@elseif(Auth::User()->id_division == 'TECHNICAL PRESALES')
 			<li>
       			<a href="{{url('/project')}}" style="font-size: 14px">Lead Register</a>
