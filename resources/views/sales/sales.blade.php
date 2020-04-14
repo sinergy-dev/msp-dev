@@ -1713,8 +1713,12 @@
       autoclose: true
     })
 
+    var nowDate = new Date();
+    var today = new Date(nowDate.getFullYear(), nowDate.getMonth(), nowDate.getDate(), 0, 0, 0, 0);
+
     $('#closing_date').datepicker({
-      autoclose: true
+      autoclose: true,
+      startDate: today
     })
 
     $('#closing_date_edit').datepicker()
