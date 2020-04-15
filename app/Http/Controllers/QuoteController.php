@@ -216,8 +216,10 @@ class QuoteController extends Controller
         if ($cek > 0) {
             $posti = 'AM';
             $type = 'QO';
-            $month_pr = substr($request['date'],5,2);
-            $year_pr = substr($request['date'],0,4);
+            $edate = strtotime($_POST['date']); 
+            $edate = date("Y-m-d",$edate);
+            $month_pr = substr($edate,5,2);
+            $year_pr = substr($edate,0,4);
 
             $array_bln = array('01' => "I",
                                 '02' => "II",
@@ -255,13 +257,16 @@ class QuoteController extends Controller
             $no = $akhirnomor.'/'.$posti .'/'. $type.'/' . $bln .'/'. $year_pr;
             $nom = QuoteMSP::select('id_quote')->orderBy('id_quote','desc')->first();
 
+            $edate = strtotime($_POST['date']); 
+            $edate = date("Y-m-d",$edate);
+
             $tambah = new QuoteMSP();
             $tambah->id_quote = $nom->id_quote+1;
             $tambah->quote_number = $no;
             $tambah->position = $posti;
             $tambah->type_of_letter = $type;
             $tambah->month = $bln;
-            $tambah->date = $request['date'];
+            $tambah->date = $edate;
             $tambah->customer_id = $request['to'];
             $tambah->attention = $request['attention'];
             $tambah->title = $request['title'];
@@ -276,8 +281,10 @@ class QuoteController extends Controller
         } else{
             $posti = 'AM';
             $type = 'QO';
-            $month_pr = substr($request['date'],5,2);
-            $year_pr = substr($request['date'],0,4);
+            $edate = strtotime($_POST['date']); 
+            $edate = date("Y-m-d",$edate);
+            $month_pr = substr($edate,5,2);
+            $year_pr = substr($edate,0,4);
 
             $array_bln = array('01' => "I",
                                 '02' => "II",
@@ -318,7 +325,7 @@ class QuoteController extends Controller
             $tambah->no = $getnumbers->id_quote+1;
             $tambah->position = $posti;
             $tambah->month = $bln;
-            $tambah->date = $request['date'];
+            $tambah->date = $edate;
             $tambah->customer_id = $request['to'];
             $tambah->attention = $request['attention'];
             $tambah->title = $request['title'];
