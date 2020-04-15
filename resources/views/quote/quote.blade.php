@@ -411,8 +411,13 @@
         },
     });
 
+    var nowDate = new Date();
+    var today = new Date(nowDate.getFullYear(), nowDate.getMonth(), nowDate.getDate(), 0, 0, 0, 0);
+
     $('#date').datepicker({
-      autoclose: true 
+      autoclose: true,
+      startDate: today,
+      todayHighlight: true, 
     }).attr('readonly','readonly').css('background-color','#fff');
 
 
