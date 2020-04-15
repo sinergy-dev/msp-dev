@@ -184,9 +184,19 @@
           <div class="modal-body">
             <form method="POST" action="{{url('/quote/store')}}" id="modalAddQuote" name="modalAddQuote">
               @csrf        
-              <div class="form-group">
+              <!-- <div class="form-group">
                   <label>Date</label>
                   <input type="date" class="form-control" id="date" name="date" required>
+              </div> -->
+
+              <div class="form-group">
+                <label for="">Date</label>
+                <div class="input-group date">
+                  <div class="input-group-addon">
+                    <i class="fa fa-calendar"></i>
+                  </div>
+                  <input type="text" class="form-control pull-right date" name="date" id="date">
+                </div>
               </div>
 
               <div class="form-group">
@@ -243,7 +253,7 @@
 </div>
 
 <!-- BACKDATE -->
-<div class="modal fade" id="letter_backdate" role="dialog">
+<!-- <div class="modal fade" id="letter_backdate" role="dialog">
     <div class="modal-dialog modal-lg">
       <div class="modal-content modal-md">
         <div class="modal-header">
@@ -305,7 +315,7 @@
         </div>
       </div>
     </div>
-</div>
+</div> -->
 
 <!--MODAL EDIT-->  
   <div class="modal fade" id="modalEdit" role="dialog">
@@ -368,6 +378,7 @@
   <script type="text/javascript" src="{{asset('js/jquery.mask.js')}}"></script>
   <script type="text/javascript" src="{{asset('js/select2.min.js')}}"></script>
   <script type="text/javascript" src="{{asset('js/dataTables.fixedColumns.min.js')}}"></script>
+  <script src="{{asset('template2/bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js')}}"></script>
   <script type="text/javascript">
     $('.money').mask('000,000,000,000,000', {reverse: true});
     function quote(quote_number,position,to,attention,title,project,description,note) {
@@ -399,6 +410,10 @@
             leftColumns: 1
         },
     });
+
+    $('#date').datepicker({
+      autoclose: true 
+    }).attr('readonly','readonly').css('background-color','#fff');
 
 
     $("#to").select2({});
