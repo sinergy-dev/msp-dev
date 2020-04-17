@@ -9,6 +9,10 @@
   .icon{
     width: 90px;
   }
+
+  .table-msp tbody tr:first-child td {
+      background-color: #ffd324;
+  }
 </style>
 
 <section class="content-header">
@@ -1108,7 +1112,7 @@
           </div>
           <div class="box-body">
             <?php $no_msp = 1; ?>
-            <table class="table table-bordered table-striped" width="100%" cellspacing="0">
+            <table class="table table-bordered table-striped table-msp" width="100%" cellspacing="0">
               <thead>
                 <tr>
                   <th width="5%"><center>No.</center></th>

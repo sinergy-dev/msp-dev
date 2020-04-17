@@ -342,22 +342,6 @@
                       {{$data->id_project}}
                     @endif
                   @endif
-                @elseif(Auth::User()->id_position == 'ENGINEER MANAGER')
-                  @if($data->result != 'OPEN')
-                    @if($data->status_engineer == 'v')
-                      <a href="{{ url ('/detail_project', $data->lead_id) }}">{{ $data->lead_id }}</a>
-                    @else
-                      {{ $data->lead_id }}
-                    @endif
-                  @endif
-                @elseif(Auth::User()->id_position == 'ENGINEER STAFF')
-                  @if($data->result != 'OPEN')
-                    @if($data->status_engineer == 'v')
-                      <a href="{{ url ('/detail_project', $data->lead_id) }}">{{ $data->lead_id }}</a>
-                    @else
-                      {{ $data->lead_id }}
-                    @endif
-                  @endif
                 @else
                   @if(Auth::User()->id_division == 'PMO')
                     @if(Auth::User()->id_division == 'PMO' && $data->status_sho != 'PMO')
@@ -637,22 +621,6 @@
                         <a href="{{ url ('/detail_project', $data->lead_id) }}">{{$data->id_project}}</a>
                       @else
                         {{$data->id_project}}
-                      @endif
-                    @endif
-                  @elseif(Auth::User()->id_position == 'ENGINEER MANAGER')
-                    @if($data->result != 'OPEN')
-                      @if($data->status_engineer == 'v')
-                        <a href="{{ url ('/detail_project', $data->lead_id) }}">{{ $data->lead_id }}</a>
-                      @else
-                        {{ $data->lead_id }}
-                      @endif
-                    @endif
-                  @elseif(Auth::User()->id_position == 'ENGINEER STAFF')
-                    @if($data->result != 'OPEN')
-                      @if($data->status_engineer == 'v')
-                        <a href="{{ url ('/detail_project', $data->lead_id) }}">{{ $data->lead_id }}</a>
-                      @else
-                        {{ $data->lead_id }}
                       @endif
                     @endif
                   @else
