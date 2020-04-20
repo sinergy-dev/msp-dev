@@ -38,9 +38,11 @@
       </div>
 
       <div class="box-body">
+        @if(Auth::User()->email == 'fuad@solusindoperkasa.co.id')
         <div style="margin-bottom: 10px">
           <button class="btn btn-success btn-sm add-messenger" data-toggle="modal" data-target="#modaltambahmapping" style="width: 70px;"><i class="fa fa-plus"></i> Add</button>
         </div>
+        @endif
         
         <div class="row">
           <div class="col-md-12 col-sm-12 col-xs-12">

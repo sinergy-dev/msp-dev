@@ -287,7 +287,7 @@ class SALESController extends Controller
                         ->where('year','2018')
                         ->count('lead_id');
 
-        } elseif($pos == 'DIRECTOR' && $com == '2' || $div == 'SALES' && $pos == 'MANAGER') {
+        } elseif($pos == 'DIRECTOR' && $com == '2' || $div == 'SALES' && $pos == 'MANAGER' || $div == 'TECHNICAL' && $pos == 'MANAGER') {
 
             $lead = DB::table('sales_lead_register')
             ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
