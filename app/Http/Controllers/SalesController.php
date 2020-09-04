@@ -1417,7 +1417,9 @@ class SALESController extends Controller
                     $tambahpid              = new PID();
                     $tambahpid->lead_id     = $request['lead_id_result'];
                     $tambahpid->no_po       = $request['no_po'];
-                    $tambahpid->no_quo      = $id_quotes;
+                    if ($id_quotes != "") {
+                        $tambahpid->no_quo      = $id_quotes;
+                    }
                     if ($request['amount_pid'] != NULL) {
                         $tambahpid->amount_pid  = str_replace(',', '',$request['amount_pid']);
                     }else{
@@ -1436,11 +1438,11 @@ class SALESController extends Controller
                     $update_quo->quote_number_final = $request['quote_number_final'];
                     $update_quo->update();
 
-                    $update_status_quo = QuoteMSP::where('quote_number', $request['quote_number_final'])->first();
                     if ($request['quote_number_final'] != NULL) {
+                        $update_status_quo = QuoteMSP::where('quote_number', $request['quote_number_final'])->first();
                         $update_status_quo->status = 'choosed';
+                        $update_status_quo->update();
                     }
-                    $update_status_quo->update();
 
                     if ($request['no_po'] != null) {
                         $cek_po = PID::select('no_po')->where('lead_id', $lead_id)->first();
