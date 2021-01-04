@@ -20,7 +20,13 @@
         @endif
 
         @if (session('success'))
-          <div class="alert alert-success notification-bar"><span>Notice : </span> {{ session('success') }}<button type="button" class="dismisbar transparant pull-right"><i class="fa fa-times fa-lg"></i></button><br>Get your Quote Number :<h4> {{$pops->quote_number}}</h4></div>
+          <div class="alert alert-success notification-bar">
+            <span>Notice : </span> {{ session('success') }}
+            <button type="button" class="dismisbar transparant pull-right">
+              <i class="fa fa-times fa-lg"></i>
+            </button>
+            <br>Get your Quote Number :<h4> {{$pops->quote_number}}</h4>
+          </div>
         @endif
 
         @if (session('alert'))
@@ -115,6 +121,7 @@
                   <table class="table table-bordered table-striped dataTable display nowrap" id="data_all" width="100%" cellspacing="0">
                     <thead>
                       <tr>
+                        <th>Id Quote</th>
                         <th>Quote Number</th>
                         <th>Position</th>
                         <th>Type of Letter</th>
@@ -137,6 +144,7 @@
                     <tbody id="products-list" name="products-list">
                       @foreach($datas as $data)
                       <tr>
+                        <td>{{ $data->id_quote }}</td>
                         <td>{{ $data->quote_number }}</td>
                         <td>{{ $data->position }}</td>
                         <td>{{ $data->type_of_letter }}</td>
@@ -396,6 +404,12 @@
         "retrive" : true,
         "scrollX": true,
         "order": [[ 0, "desc" ]],
+        "columnDefs": [
+          {
+            "targets": [ 0 ],
+            "visible": false
+          }
+        ],
         fixedColumns:   {
             leftColumns: 1
         },
