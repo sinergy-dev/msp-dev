@@ -625,7 +625,7 @@ class HRGAController extends Controller
             
             // $kirim = User::where('email', $nik_kirim->email)->first()->email;
 
-            $kirim = User::where('email', 'faiqoh@sinergy.co.id')->first();
+            // $kirim = User::where('email', 'faiqoh@sinergy.co.id')->first();
 
             $name_cuti = DB::table('tb_cuti')
                 ->join('users','users.nik','=','tb_cuti.nik')
@@ -643,7 +643,12 @@ class HRGAController extends Controller
 
             $ardetil_after = "";
 
-            Mail::to($kirim)->cc('faiqoh@sinergy.co.id')->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[SIMS-App] Permohonan Cuti'));            
+            if($ter == 'SALES MSP' && $pos == 'STAFF'){
+                Mail::to($nik_kirim)->cc(['yudhi@sinergy.co.id','ferry@solusindoperkasa.co.id'])->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Permohonan Cuti'));         
+            } else {
+                Mail::to($nik_kirim)->cc('yudhi@sinergy.co.id')->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Permohonan Cuti'));            
+            }
+
         
         }else{
             if ($div == 'TECHNICAL' || $div == 'TECHNICAL PRESALES') {
@@ -654,7 +659,7 @@ class HRGAController extends Controller
             
             //
             // $kirim = User::where('email', $nik_kirim->email)->first()->email;
-            $kirim = User::where('email', 'faiqoh@sinergy.co.id')->first();
+            // $kirim = User::where('email', 'faiqoh@sinergy.co.id')->first();
 
 
             $name_cuti = DB::table('tb_cuti')
@@ -673,7 +678,11 @@ class HRGAController extends Controller
 
             $ardetil_after = "";
             
-            Mail::to($kirim)->cc('faiqoh@sinergy.co.id')->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[SIMS-App] Permohonan Cuti'));
+            if($div == 'TECHNICAL' || $div == 'TECHNICAL PRESALES'){
+                Mail::to($nik_kirim)->cc(['yudhi@sinergy.co.id','ferry@solusindoperkasa.co.id'])->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Permohonan Cuti'));         
+            } else {
+                Mail::to($nik_kirim)->cc('yudhi@sinergy.co.id')->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Permohonan Cuti'));            
+            }
         }
 
         return redirect()->back();
@@ -756,8 +765,8 @@ class HRGAController extends Controller
 
         $nik_kirim = DB::table('tb_cuti')->join('users','users.nik','=','tb_cuti.nik')->select('users.email')->where('id_cuti',$id_cuti)->first();
 
-        $kirim = User::where('email','ladinar@sinergy.co.id')
-                        ->get();
+        // $kirim = User::where('email','ladinar@sinergy.co.id')
+        //                 ->get();
 
         $name_cuti = DB::table('tb_cuti')
                 ->join('users','users.nik','=','tb_cuti.nik')
@@ -775,7 +784,7 @@ class HRGAController extends Controller
 
         $ardetil_after = "";
 
-        Mail::to($kirim)->cc('faiqoh@sinergy.co.id')->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[SIMS-App] Approve - Permohonan Cuti'));        
+        Mail::to($nik_kirim)->cc('yudhi@sinergy.co.id')->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Approve - Permohonan Cuti'));        
 
         return redirect()->back();
     }
@@ -811,7 +820,7 @@ class HRGAController extends Controller
 
         $ardetil_after = "";
 
-        Mail::to($kirim)->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[SIMS-App] Decline - Permohonan Cuti'));
+        Mail::to($nik_kirim)->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[SIMS-App] Decline - Permohonan Cuti'));
 
         return redirect()->back();
     }
@@ -887,7 +896,7 @@ class HRGAController extends Controller
             
             // $kirim = User::where('email', $nik_kirim->email)->first()->email;
 
-            $kirim = User::where('email', 'faiqoh@sinergy.co.id')->first();
+            // $kirim = User::where('email', 'faiqoh@sinergy.co.id')->first();
 
             $name_cuti = DB::table('tb_cuti')
                 ->join('users','users.nik','=','tb_cuti.nik')
@@ -909,7 +918,11 @@ class HRGAController extends Controller
 
             $ardetil_after = explode(',',$hari_after);
 
-            Mail::to($kirim)->cc('faiqoh@sinergy.co.id')->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[SIMS-App] Reschedule - Permohonan Cuti'));            
+            if($ter == 'SALES MSP' && $pos == 'STAFF' ){
+                Mail::to($nik_kirim)->cc(['yudhi@sinergy.co.id','ferry@solusindoperkasa.co.id'])->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Permohonan Cuti'));         
+            } else {
+                Mail::to($nik_kirim)->cc('yudhi@sinergy.co.id')->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Permohonan Cuti'));            
+            }  
         
         }else{
             if ($div == 'TECHNICAL' || $div == 'TECHNICAL PRESALES') {
@@ -920,7 +933,7 @@ class HRGAController extends Controller
             
             //
             // $kirim = User::where('email', $nik_kirim->email)->first()->email;
-            $kirim = User::where('email', 'faiqoh@sinergy.co.id')->first();
+            // $kirim = User::where('email', 'faiqoh@sinergy.co.id')->first();
 
 
             $name_cuti = DB::table('tb_cuti')
@@ -942,8 +955,12 @@ class HRGAController extends Controller
             $hari_after = $_POST['dates_after'];
 
             $ardetil_after = explode(',',$hari_after);
-            
-            Mail::to($kirim)->cc('faiqoh@sinergy.co.id')->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[SIMS-App] Reschedule - Permohonan Cuti'));
+
+            if( $div == 'TECHNICAL' || $div == 'TECHNICAL PRESALES'){
+                Mail::to($nik_kirim)->cc(['yudhi@sinergy.co.id','ferry@solusindoperkasa.co.id'])->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Permohonan Cuti'));         
+            } else {
+                Mail::to($nik_kirim)->cc('yudhi@sinergy.co.id')->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Permohonan Cuti'));            
+            }
         }
 
         return redirect()->back();
@@ -968,7 +985,8 @@ class HRGAController extends Controller
             ->whereIn('id_cuti',function($query){
                 $query->select('id_cuti')
                     ->from('tb_cuti')
-                    ->where('nik','=',Auth::user()->nik);
+                    ->where('nik','=',Auth::user()->nik)
+                    ->where('status', '<>', 'd');
             })
             ->pluck('date_off');
 
@@ -1010,7 +1028,7 @@ class HRGAController extends Controller
             }
             
             // $kirim = User::where('email', $nik_kirim->email)->first()->email;
-            $kirim = User::where('email', 'faiqoh@sinergy.co.id')->first()->email;
+            // $kirim = User::where('email', 'faiqoh@sinergy.co.id')->first()->email;
 
             $name_cuti = DB::table('tb_cuti')
                 ->join('users','users.nik','=','tb_cuti.nik')
@@ -1028,7 +1046,11 @@ class HRGAController extends Controller
 
             $ardetil_after = "";
 
-            Mail::to($kirim)->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[SIMS-App] Permohonan Cuti (Follow Up)'));
+            if($ter == 'SALES MSP' && $pos == 'STAFF'){
+                Mail::to($nik_kirim)->cc('ferry@solusindoperkasa.co.id')->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Permohonan Cuti'));         
+            } else {
+                Mail::to($nik_kirim)->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Permohonan Cuti'));            
+            }
             
             
         }else{
@@ -1038,7 +1060,7 @@ class HRGAController extends Controller
                  $nik_kirim = DB::table('users')->select('users.email')->where('email','ferry@solusindoperkasa.co.id')->where('id_company','2')->first();
             }
             
-            $kirim = User::where('email', 'faiqoh@sinergy.co.id')->get();
+            // $kirim = User::where('email', 'faiqoh@sinergy.co.id')->get();
             
             // $kirim = User::where('email', $nik_kirim->email)->first()->email;
 
@@ -1058,7 +1080,13 @@ class HRGAController extends Controller
 
             $ardetil_after = "";
 
-            Mail::to($kirim)->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[SIMS-App] Approve - Permohonan Cuti (Follow Up)'));
+            if($div == 'TECHNICAL' || $div == 'TECHNICAL PRESALES'){
+                Mail::to($nik_kirim)->cc('ferry@solusindoperkasa.co.id')->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Permohonan Cuti'));         
+            } else {
+                Mail::to($nik_kirim)->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Permohonan Cuti'));            
+            }
+
+            // Mail::to($nik_kirim)->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Approve - Permohonan Cuti (Follow Up)'));
         }
 
         return redirect()->back()->with('success','Cuti Kamu udah di follow up ke Bos! Thanks.');
