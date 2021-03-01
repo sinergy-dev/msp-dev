@@ -248,16 +248,15 @@ class POAssetMSPController extends Controller
     public function add_produk($id_po_asset)
     {
         $datas = DB::table('tb_po_asset_msp')
-                ->join('users', 'users.nik', '=', 'tb_po_asset_msp.nik_admin')
                 ->join('tb_po_msp', 'tb_po_asset_msp.no_po', '=', 'tb_po_msp.no')
                 ->join('tb_pr_msp', 'tb_pr_msp.no', '=', 'tb_po_asset_msp.no_pr')
-                ->join('tb_id_project','tb_id_project.id_pro','=','tb_po_asset_msp.project_id')
-                ->select('tb_pr_msp.no_pr','tb_po_asset_msp.status_po','users.name', 'tb_pr_msp.no', 'tb_pr_msp.date', 'tb_po_msp.no_po', 'tb_id_project.id_project','tb_po_asset_msp.project_id', 'tb_po_asset_msp.id_po_asset', 'tb_po_asset_msp.date_handover','tb_po_asset_msp.no_invoice', 'tb_po_asset_msp.to_agen', 'tb_pr_msp.subject')
+                ->select('tb_po_msp.no_po', 'tb_po_asset_msp.id_po_asset', 'tb_po_asset_msp.to_agen', 'tb_pr_msp.subject')
                 ->where('id_po_asset', $id_po_asset)
                 ->first();
 
         $msp_code = Inventory_msp::select("kode_barang","qty","nama","unit")->get();
 
+        // return $datas;
         return view('admin_msp/add_produk_po', compact('msp_code', 'datas'));
     }
 
