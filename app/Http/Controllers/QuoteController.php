@@ -27,13 +27,14 @@ class QuoteController extends Controller
         $position = DB::table('users')->select('id_position')->where('nik', $nik)->first();
         $pos = $position->id_position;
 
-        $pops = QuoteMSP::select('quote_number')->orderBy('quote_number','desc')->first();
+        $pops = QuoteMSP::select('quote_number')->orderBy('id_quote','desc')->first();
 
         // $pops2 = QuoteMSP::select('quote_number')->where('status_backdate', 'F')->orderBy('quote_number', 'desc')->first();
 
 		$datas = QuoteMSP::join('users', 'users.nik', '=', 'tb_quote_msp.nik')
                         ->join('tb_contact', 'tb_contact.id_customer', '=', 'tb_quote_msp.customer_id')
                         ->select('id_quote','quote_number','position','type_of_letter','date','to','attention','title','project','status', 'description', 'amount','note', 'tb_quote_msp.nik', 'name', 'month', 'customer_legal_name')
+                        ->orderBy('id_quote','desc')
                         ->get();
 
        /* $count = QuoteMSP::where('status_backdate', 'T')
@@ -304,7 +305,7 @@ class QuoteController extends Controller
 
             $getnumbers = QuoteMSP::orderBy('id_quote', 'desc')->first();
 
-            if($getnumber == NULL){
+            if($getnumber == 0){
                 $getlastnumber = 1;
                 $lastnumber = $getlastnumber;
             } else{
@@ -322,8 +323,10 @@ class QuoteController extends Controller
             $no = $akhirnomor.'/'.$posti .'/'. $type.'/' . $bln .'/'. $year_pr;
 
             $tambah = new QuoteMSP();
-            $tambah->no = $getnumbers->id_quote+1;
+            $tambah->id_quote = $getnumbers->id_quote+1;
+            $tambah->quote_number = $no;
             $tambah->position = $posti;
+            $tambah->type_of_letter = $type;
             $tambah->month = $bln;
             $tambah->date = $edate;
             $tambah->customer_id = $request['to'];
@@ -331,8 +334,8 @@ class QuoteController extends Controller
             $tambah->title = $request['title'];
             $tambah->project = $request['project'];
             $tambah->description = $request['description'];
-            $tambah->from = Auth::User()->nik;
-            // $tambah->result = 'T';
+            $tambah->nik = Auth::User()->nik;
+            $tambah->amount = str_replace(',', '', $request['amount']);
             $tambah->project_type = $request['project_type'];
             $tambah->save();
 
