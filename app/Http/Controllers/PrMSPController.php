@@ -189,7 +189,7 @@ class PrMSPController extends Controller
         $datas2 = DB::table('tb_pr_msp')
                     ->join('users', 'users.nik', '=', 'tb_pr_msp.from')
                     ->join('tb_id_project', 'tb_id_project.id_pro', '=', 'tb_pr_msp.project_id')
-                    ->select('name', 'no', 'no_pr', 'type_of_letter', 'month', 'tb_pr_msp.date', 'to', 'attention', 'title', 'project', 'description', 'issuance', 'project_id', 'subject', 'tb_id_project.id_project')
+                    ->select('name', 'no', 'no_pr', 'type_of_letter', 'month', 'tb_pr_msp.date', 'to', 'attention', 'title', 'project', 'description', 'issuance', 'subject', 'tb_id_project.id_project')
                     ->orderBy('tb_pr_msp.created_at', 'desc')
                     // ->where('tb_pr_msp.date','like',$tahun."%")
                     ->get();
