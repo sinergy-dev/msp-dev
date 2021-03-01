@@ -139,7 +139,15 @@
                           @if($data->id_company == '2' && $data->status == 'n')
                             <tr>
                               <td>{{$data->name}}</td>
-                              <td>{{$data->name_division}}</td>
+                              @if($data->name_division == "-")
+                              <td>
+                                Admin
+                              </td>
+                              @else
+                              <td>
+                                {{$data->name_division}}
+                              </td>
+                              @endif
                               <td>{{$data->date_req}}</td>
                               <td>
                                 <button name="date_off" id="date_off" class="date_off" value="{{$data->id_cuti}}" style="outline: none;background-color: transparent;background-repeat:no-repeat;
@@ -189,6 +197,8 @@
                           <th>Division</th>
                           <th>Request Date</th>
                           <th>Date Off</th>
+                          <th>Approved Date</th>
+                          <th>Approved By</th>
                           <th>Status</th>
                         </tr>
                       </thead>
@@ -196,13 +206,23 @@
                         @foreach($cuti as $data)
                             <tr>
                               <td>{{$data->name}}</td>
-                              <td>{{$data->name_division}}</td>
+                              @if($data->name_division == "-")
+                              <td>
+                                Admin
+                              </td>
+                              @else
+                              <td>
+                                {{$data->name_division}}
+                              </td>
+                              @endif
                               <td>{{$data->date_req}}</td>
                               <td>
                                 <button name="date_off" id="date_off" class="date_off" value="{{$data->id_cuti}}" style="outline: none;background-color: transparent;background-repeat:no-repeat;
                                   border: none;">{{$data->days}}
                                 Days<i class="glyphicon glyphicon-zoom-in" style="padding-left: 5px"></i></button>
                               </td>
+                              <td>{{$data->updated_at}}</td>
+                              <td>{{$data->pic}}</td>
                               <td>
                                 @if($data->status == 'v' && $data->decline_reason != "")
 	                        		<span class="label label-info">Approved with cancelation</span>
