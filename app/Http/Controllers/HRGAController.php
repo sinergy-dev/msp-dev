@@ -619,7 +619,7 @@ class HRGAController extends Controller
         if ($ter != NULL) { 
             if ($ter == 'SALES MSP' && $pos == 'STAFF') {
                 $nik_kirim = DB::table('users')->select('users.email')->where('id_position','MANAGER')->where('id_company','2')->first();
-            }else if ($div == 'OPERATION'){
+            }else if ($ter == 'OPERATION'){
                 $nik_kirim = DB::table('users')->select('users.email')->where('email','ferry@solusindoperkasa.co.id')->where('id_company','2')->first();
             }
             
@@ -890,7 +890,7 @@ class HRGAController extends Controller
         if ($ter != NULL) { 
             if ($ter == 'SALES MSP' && $pos == 'STAFF') {
                 $nik_kirim = DB::table('users')->select('users.email')->where('id_position','MANAGER')->where('id_company','2')->first();
-            }else if ($div == 'OPERATION'){
+            }else if ($ter == 'OPERATION'){
                 $nik_kirim = DB::table('users')->select('users.email')->where('email','ferry@solusindoperkasa.co.id')->where('id_company','2')->first();
             }
             
@@ -1023,7 +1023,7 @@ class HRGAController extends Controller
         if ($ter != NULL) {
             if ($ter == 'SALES MSP' && $pos == 'STAFF') {
                 $nik_kirim = DB::table('users')->select('users.email')->where('id_position','MANAGER')->where('id_company','2')->first();
-            }else if ($div == 'OPERATION'){
+            }else if ($ter == 'OPERATION'){
                 $nik_kirim = DB::table('users')->select('users.email')->where('email','ferry@solusindoperkasa.co.id')->where('id_company','2')->first();
             }
             
