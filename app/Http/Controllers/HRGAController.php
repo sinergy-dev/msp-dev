@@ -366,7 +366,7 @@ class HRGAController extends Controller
                     ->get();
             }
         }else{
-            if (Auth::User()->id_company == 2 && Auth::User()->id_position == 'DIRECTOR') {
+            if (Auth::User()->id_company == 2 && Auth::User()->id_position == 'DIRECTOR' || $div == 'TECHNICAL' && $pos == 'MANAGER') {
                 $cuti = DB::table('tb_cuti')
                 ->join('tb_cuti_detail','tb_cuti_detail.id_cuti','=','tb_cuti.id_cuti')
                 ->join('users','users.nik','=','tb_cuti.nik')
@@ -387,38 +387,36 @@ class HRGAController extends Controller
                 ->where('tb_cuti.status', 'n')
                 ->where('users.id_company','2')
                 ->get();
-            } elseif($div == 'TECHNICAL' && $pos == 'MANAGER'){
+            } 
+            // elseif($div == 'TECHNICAL' && $pos == 'MANAGER'){
 
-                $cuti = DB::table('tb_cuti')
-                    ->join('users','users.nik','=','tb_cuti.nik')
-                    ->join('tb_cuti_detail','tb_cuti_detail.id_cuti','=','tb_cuti.id_cuti')
-                    ->join('tb_position','tb_position.id_position','=','users.id_position')
-                    ->join('tb_division','tb_division.id_division','=','users.id_division')
-                    ->select('users.nik','users.name','tb_position.name_position','tb_division.name_division','tb_division.id_division','tb_cuti.date_req','tb_cuti.reason_leave','tb_cuti.pic', 'tb_cuti.updated_at','tb_cuti.date_start','tb_cuti.date_end','tb_cuti.id_cuti','tb_cuti.status','tb_cuti.decline_reason',DB::raw('COUNT(tb_cuti_detail.id_cuti) as days'),'users.cuti',DB::raw('COUNT(tb_cuti.id_cuti) as niks'),DB::raw('group_concat(date_off) as dates'),'users.id_position','users.email','users.id_territory', 'users.id_company')
-                    ->orderBy('date_req','DESC')
-                    ->groupby('tb_cuti.id_cuti')
-                    // ->where('tb_cuti.status','n')
-                    ->where('users.id_division', 'TECHNICAL')
-                    ->orWhere('users.id_division', 'TECHNICAL PRESALES')
-                    ->where('users.id_company','2')
-                    ->groupby('nik')
-                    ->get();
+            //     $cuti = DB::table('tb_cuti')
+            //         ->join('users','users.nik','=','tb_cuti.nik')
+            //         ->join('tb_cuti_detail','tb_cuti_detail.id_cuti','=','tb_cuti.id_cuti')
+            //         ->join('tb_position','tb_position.id_position','=','users.id_position')
+            //         ->join('tb_division','tb_division.id_division','=','users.id_division')
+            //         ->select('users.nik','users.name','tb_position.name_position','tb_division.name_division','tb_division.id_division','tb_cuti.date_req','tb_cuti.reason_leave','tb_cuti.pic', 'tb_cuti.updated_at','tb_cuti.date_start','tb_cuti.date_end','tb_cuti.id_cuti','tb_cuti.status','tb_cuti.decline_reason',DB::raw('COUNT(tb_cuti_detail.id_cuti) as days'),'users.cuti',DB::raw('COUNT(tb_cuti.id_cuti) as niks'),DB::raw('group_concat(date_off) as dates'),'users.id_position','users.email','users.id_territory', 'users.id_company')
+            //         ->orderBy('date_req','DESC')
+            //         ->groupby('tb_cuti.id_cuti')
+            //         // ->where('tb_cuti.status','n')
+            //         ->where('users.id_company','2')
+            //         ->groupby('nik')
+            //         ->get();
 
-                $cuti2 = DB::table('tb_cuti')
-                    ->join('users','users.nik','=','tb_cuti.nik')
-                    ->join('tb_cuti_detail','tb_cuti_detail.id_cuti','=','tb_cuti.id_cuti')
-                    ->join('tb_position','tb_position.id_position','=','users.id_position')
-                    ->join('tb_division','tb_division.id_division','=','users.id_division')
-                    ->select('users.nik','users.name','tb_position.name_position','tb_division.name_division','tb_division.id_division','tb_cuti.date_req','tb_cuti.reason_leave','tb_cuti.date_start','tb_cuti.date_end','tb_cuti.id_cuti','tb_cuti.status','tb_cuti.decline_reason',DB::raw('COUNT(tb_cuti_detail.id_cuti) as days'),'users.cuti',DB::raw('COUNT(tb_cuti.id_cuti) as niks'),DB::raw('group_concat(date_off) as dates'),'users.id_position','users.email','users.id_territory', 'users.id_company')
-                    ->orderBy('date_req','DESC')
-                    ->groupby('tb_cuti.id_cuti')
-                    ->where('tb_cuti.status','n')
-                    ->where('users.id_division', 'TECHNICAL')
-                    ->orWhere('users.id_division', 'TECHNICAL PRESALES')
-                    ->where('users.id_company','2')
-                    ->groupby('nik')
-                    ->get();
-            } else{
+            //     $cuti2 = DB::table('tb_cuti')
+            //         ->join('users','users.nik','=','tb_cuti.nik')
+            //         ->join('tb_cuti_detail','tb_cuti_detail.id_cuti','=','tb_cuti.id_cuti')
+            //         ->join('tb_position','tb_position.id_position','=','users.id_position')
+            //         ->join('tb_division','tb_division.id_division','=','users.id_division')
+            //         ->select('users.nik','users.name','tb_position.name_position','tb_division.name_division','tb_division.id_division','tb_cuti.date_req','tb_cuti.reason_leave','tb_cuti.date_start','tb_cuti.date_end','tb_cuti.id_cuti','tb_cuti.status','tb_cuti.decline_reason',DB::raw('COUNT(tb_cuti_detail.id_cuti) as days'),'users.cuti',DB::raw('COUNT(tb_cuti.id_cuti) as niks'),DB::raw('group_concat(date_off) as dates'),'users.id_position','users.email','users.id_territory', 'users.id_company')
+            //         ->orderBy('date_req','DESC')
+            //         ->groupby('tb_cuti.id_cuti')
+            //         ->where('tb_cuti.status','n')
+            //         ->where('users.id_company','2')
+            //         ->groupby('nik')
+            //         ->get();
+            // } 
+            else{
                $cuti = DB::table('tb_cuti')
                 ->join('tb_cuti_detail','tb_cuti_detail.id_cuti','=','tb_cuti.id_cuti')
                 ->join('users','users.nik','=','tb_cuti.nik')
@@ -620,7 +618,7 @@ class HRGAController extends Controller
             if ($ter == 'SALES MSP' && $pos == 'STAFF') {
                 $nik_kirim = DB::table('users')->select('users.email')->where('id_position','MANAGER')->where('id_company','2')->first();
             }else if ($ter == 'OPERATION'){
-                $nik_kirim = DB::table('users')->select('users.email')->where('email','ferry@solusindoperkasa.co.id')->where('id_company','2')->first();
+                $nik_kirim = DB::table('users')->select('users.email')->where('email','sinung@solusindoperkasa.co.id')->where('id_company','2')->first();
             }
             
             // $kirim = User::where('email', $nik_kirim->email)->first()->email;
@@ -891,7 +889,7 @@ class HRGAController extends Controller
             if ($ter == 'SALES MSP' && $pos == 'STAFF') {
                 $nik_kirim = DB::table('users')->select('users.email')->where('id_position','MANAGER')->where('id_company','2')->first();
             }else if ($ter == 'OPERATION'){
-                $nik_kirim = DB::table('users')->select('users.email')->where('email','ferry@solusindoperkasa.co.id')->where('id_company','2')->first();
+                $nik_kirim = DB::table('users')->select('users.email')->where('email','sinung@solusindoperkasa.co.id')->where('id_company','2')->first();
             }
             
             // $kirim = User::where('email', $nik_kirim->email)->first()->email;
@@ -1024,7 +1022,7 @@ class HRGAController extends Controller
             if ($ter == 'SALES MSP' && $pos == 'STAFF') {
                 $nik_kirim = DB::table('users')->select('users.email')->where('id_position','MANAGER')->where('id_company','2')->first();
             }else if ($ter == 'OPERATION'){
-                $nik_kirim = DB::table('users')->select('users.email')->where('email','ferry@solusindoperkasa.co.id')->where('id_company','2')->first();
+                $nik_kirim = DB::table('users')->select('users.email')->where('email','sinung@solusindoperkasa.co.id')->where('id_company','2')->first();
             }
             
             // $kirim = User::where('email', $nik_kirim->email)->first()->email;

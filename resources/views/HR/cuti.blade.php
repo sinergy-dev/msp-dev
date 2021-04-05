@@ -582,28 +582,28 @@
             todayHighlight: true,
             multidate: true,
             datesDisabled: disableDate,
-            beforeShowDay: function(date){
-              var index = hari_libur_nasional.indexOf(moment(date).format("MM/DD/YYYY"))
-              if(index > 0){
-                return {
-                  enabled: false,
-                  tooltip: hari_libur_nasional_tooltip[index],
-                  classes: 'hari_libur'
-                };
-              } else if(disableDate.indexOf(moment(date).format("MM/DD/YYYY")) > 0) {
-                return {
-                  enabled: false,
-                  tooltip: 'Cuti Pribadi',
-                };
-              }
-            },
+            // beforeShowDay: function(date){
+            //   var index = hari_libur_nasional.indexOf(moment(date).format("MM/DD/YYYY"))
+            //   if(index > 0){
+            //     return {
+            //       enabled: false,
+            //       tooltip: hari_libur_nasional_tooltip[index],
+            //       classes: 'hari_libur'
+            //     };
+            //   } else if(disableDate.indexOf(moment(date).format("MM/DD/YYYY")) > 0) {
+            //     return {
+            //       enabled: false,
+            //       tooltip: 'Cuti Pribadi',
+            //     };
+            //   }
+            // },
           }).on('changeDate', function(e) {
             $('#lihat_hasil').val(' ' + e.dates.length)
             var cutis = $("#sisa_cuti").text();
             var cutiss = $(".lihat_hasil").val();
             // console.log(cutis + " " + cutiss)
 
-            $("#avaliableDays").val(result.parameterCuti.total_cuti - cutiss)
+            // $("#avaliableDays").val(result.parameterCuti.total_cuti - cutiss)
             if (parseFloat(cutis) >= parseFloat(cutiss)) {
               e.preventDefault();     
               $(".btn-submit").prop('disabled', false);
@@ -827,18 +827,18 @@
       });
 
 
-    var hari_libur_nasional = []
-    var hari_libur_nasional_tooltip = []
-    $.ajax({
-      type:"GET",
-      url:"https://www.googleapis.com/calendar/v3/calendars/en.indonesian%23holiday%40group.v.calendar.google.com/events?key={{env('GOOGLE_API_YEY')}}",
-      success: function(result){
-        $.each(result.items,function(key,value){
-          hari_libur_nasional.push(moment( value.start.date).format("MM/DD/YYYY"))
-          hari_libur_nasional_tooltip.push(value.summary)
-        })
-      }
-    })
+    // var hari_libur_nasional = []
+    // var hari_libur_nasional_tooltip = []
+    // $.ajax({
+    //   type:"GET",
+    //   url:"https://www.googleapis.com/calendar/v3/calendars/en.indonesian%23holiday%40group.v.calendar.google.com/events?key={{env('GOOGLE_API_YEY')}}",
+    //   success: function(result){
+    //     $.each(result.items,function(key,value){
+    //       hari_libur_nasional.push(moment( value.start.date).format("MM/DD/YYYY"))
+    //       hari_libur_nasional_tooltip.push(value.summary)
+    //     })
+    //   }
+    // })
 
   </script>
 @endsection
