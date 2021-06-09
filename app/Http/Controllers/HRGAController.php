@@ -13,6 +13,7 @@ use App\User;
 use App\Mail\CutiKaryawan;
 use GuzzleHttp\Client;
 use Mail;
+use Log;
 
 class HRGAController extends Controller
 {
@@ -332,7 +333,7 @@ class HRGAController extends Controller
                     ->select('users.nik','users.name','tb_position.name_position','tb_division.name_division','tb_division.id_division','tb_cuti.date_req','tb_cuti.reason_leave','tb_cuti.date_start','tb_cuti.date_end','tb_cuti.id_cuti','tb_cuti.status','tb_cuti.decline_reason',DB::raw('COUNT(tb_cuti_detail.id_cuti) as days'),'users.cuti',DB::raw('COUNT(tb_cuti.id_cuti) as niks'),DB::raw('group_concat(date_off) as dates'),'users.id_position','users.email','users.id_territory', 'users.id_company')
                     ->orderBy('date_req','DESC')
                     ->groupby('tb_cuti.id_cuti')
-                    ->where('tb_cuti.status','n')
+                    ->where('tb_cuti_detail.status','NEW')
                     ->where('users.id_division', 'SALES')
                     ->where('users.id_company','2')
                     ->groupby('nik')
@@ -360,7 +361,7 @@ class HRGAController extends Controller
                     ->select('users.nik','users.name','tb_position.name_position','tb_division.name_division','tb_division.id_division','tb_cuti.date_req','tb_cuti.reason_leave','tb_cuti.date_start','tb_cuti.date_end','tb_cuti.id_cuti','tb_cuti.status','tb_cuti.decline_reason',DB::raw('COUNT(tb_cuti_detail.id_cuti) as days'),'users.cuti',DB::raw('COUNT(tb_cuti.id_cuti) as niks'),DB::raw('group_concat(date_off) as dates'),'users.id_position','users.email','users.id_territory', 'users.id_company')
                     ->orderBy('date_req','DESC')
                     ->groupby('tb_cuti.id_cuti')
-                    ->where('tb_cuti.status','n')
+                    ->where('tb_cuti_detail.status','NEW')
                     ->where('users.nik',$nik)
                     ->groupby('nik')
                     ->get();
@@ -384,7 +385,7 @@ class HRGAController extends Controller
                 ->join('tb_division','tb_division.id_division','=','users.id_division')
                 ->select('users.nik','users.name','tb_position.name_position','tb_division.name_division','tb_cuti.date_req','tb_cuti.reason_leave','tb_cuti.date_start','tb_cuti.date_end','tb_cuti.id_cuti','tb_cuti.status','tb_cuti.decline_reason','users.id_company',DB::raw('COUNT(tb_cuti_detail.id_cuti) as days'),DB::raw('group_concat(date_off) as date_off'))
                 ->groupby('tb_cuti.id_cuti')
-                ->where('tb_cuti.status', 'n')
+                ->where('tb_cuti_detail.status','NEW')
                 ->where('users.id_company','2')
                 ->get();
             } 
@@ -434,7 +435,7 @@ class HRGAController extends Controller
                 ->join('tb_division','tb_division.id_division','=','users.id_division')
                 ->select('users.nik','users.name','tb_position.name_position','tb_division.name_division','tb_cuti.date_req','tb_cuti.reason_leave','tb_cuti.date_start','tb_cuti.date_end','tb_cuti.id_cuti','tb_cuti.status','tb_cuti.decline_reason','users.id_company',DB::raw('COUNT(tb_cuti_detail.id_cuti) as days'),DB::raw('group_concat(date_off) as date_off'))
                 ->where('users.nik',$nik)
-                ->where('tb_cuti.status', 'n')
+                ->where('tb_cuti_detail.status','NEW')
                 ->groupby('tb_cuti.id_cuti')
                 ->get(); 
             }
@@ -589,6 +590,10 @@ class HRGAController extends Controller
         $nik = Auth::User()->nik;
         $date_now = date('Y-m-d');
 
+        $array =  explode(',', $_POST['date_start']);
+
+        $hitung = sizeof($array);
+        
         $tambah = new Cuti();
         $tambah->nik = $nik;
         $tambah->date_req = $date_now;
@@ -597,16 +602,12 @@ class HRGAController extends Controller
         $tambah->status = 'n';
         $tambah->save();
 
-        $array =  explode(',', $_POST['date_start']);
-
-        $hitung = sizeof($array);
-        
-
         foreach ($array as $dates) {
             $store = new CutiDetil();
             $store->id_cuti = $tambah->id_cuti;
             $format_start_s = strtotime($dates);
             $store->date_off = date("Y-m-d",$format_start_s);
+            $store->status      = 'NEW';
             $store->save();
         }
 
@@ -630,16 +631,18 @@ class HRGAController extends Controller
                 ->select('users.name','status')
                 ->where('id_cuti', $id_cuti)->first();
 
-            $hari = DB::table('tb_cuti')
-                    ->join('tb_cuti_detail','tb_cuti_detail.id_cuti','=','tb_cuti.id_cuti')
-                    ->select(db::raw('count(tb_cuti_detail.id_cuti) as days'),'tb_cuti.date_req','tb_cuti.reason_leave','tb_cuti.status',DB::raw('group_concat(date_off) as dates'))
-                    ->groupby('tb_cuti_detail.id_cuti')
-                    ->where('tb_cuti.id_cuti', $id_cuti)
-                    ->first();
+            $hari_cuti = DB::table('tb_cuti')
+                ->join('tb_cuti_detail','tb_cuti_detail.id_cuti','=','tb_cuti.id_cuti')
+                ->select(db::raw('count(tb_cuti_detail.id_cuti) as days'),'tb_cuti.date_req','tb_cuti.reason_leave','tb_cuti.status',DB::raw('group_concat(date_off) as dates'))
+                ->groupby('tb_cuti_detail.id_cuti')
+                ->where('tb_cuti.id_cuti', $id_cuti)
+                ->first();
 
-            $ardetil = explode(',',$hari->dates);
+            $ardetil = explode(',',$hari_cuti->dates);
 
             $ardetil_after = "";
+
+            $hari = collect(['cuti_accept'=>$hari_cuti]);
 
             if($ter == 'SALES MSP' && $pos == 'STAFF'){
                 Mail::to($nik_kirim)->cc(['yudhi@sinergy.co.id','ferry@solusindoperkasa.co.id'])->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Permohonan Cuti'));         
@@ -662,19 +665,21 @@ class HRGAController extends Controller
 
             $name_cuti = DB::table('tb_cuti')
                 ->join('users','users.nik','=','tb_cuti.nik')
-                ->select('users.name','status')
+                ->select('users.name','tb_cuti.status')
                 ->where('id_cuti', $id_cuti)->first();
 
-            $hari = DB::table('tb_cuti')
-                    ->join('tb_cuti_detail','tb_cuti_detail.id_cuti','=','tb_cuti.id_cuti')
-                    ->select(db::raw('count(tb_cuti_detail.id_cuti) as days'),'tb_cuti.date_req','tb_cuti.reason_leave','tb_cuti.status',DB::raw('group_concat(date_off) as dates'))
-                    ->groupby('tb_cuti_detail.id_cuti')
-                    ->where('tb_cuti.id_cuti', $id_cuti)
-                    ->first();
+            $hari_cuti = DB::table('tb_cuti')
+                ->join('tb_cuti_detail','tb_cuti_detail.id_cuti','=','tb_cuti.id_cuti')
+                ->select(db::raw('count(tb_cuti_detail.id_cuti) as days'),'tb_cuti.date_req','tb_cuti.reason_leave','tb_cuti.status',DB::raw('group_concat(date_off) as dates'))
+                ->groupby('tb_cuti_detail.id_cuti')
+                ->where('tb_cuti.id_cuti', $id_cuti)
+                ->first();
 
-            $ardetil = explode(',',$hari->dates);
+            $ardetil = explode(',',$hari_cuti->dates);
 
             $ardetil_after = "";
+
+            $hari = collect(['cuti_accept'=>$hari_cuti]);
             
             if($div == 'TECHNICAL' || $div == 'TECHNICAL PRESALES'){
                 Mail::to($nik_kirim)->cc(['yudhi@sinergy.co.id','ferry@solusindoperkasa.co.id'])->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Permohonan Cuti'));         
@@ -714,36 +719,31 @@ class HRGAController extends Controller
         $company = DB::table('users')->select('id_company')->where('nik',$nik)->first();
         $com = $company->id_company;
 
-        $id_cuti = $request['id_cuti_detil_approve'];
+        $id_cuti = $request['id_cuti_detil'];
         $nik = $request['nik_cuti'];
 
         $update = Cuti::where('id_cuti',$id_cuti)->first();
         $update->decline_reason = $request['reason_reject'];
-        $update->status 		= 'v';
-        $update->pic        = Auth::User()->name;
+        $update->pic            = Auth::User()->name;
         $update->updated_at     = date('Y-m-d');
+        $update->status = 'v';
         $update->update();
 
-        $array =  explode(',', $request['cuti_fix']);
+        $cuti_accept = explode(',', $request['cuti_fix_accept']);
+        $cuti_reject = explode(',', $request['cuti_fix_reject']);
 
-        $delete = CutiDetil::where('id_cuti',$id_cuti)->delete();
-
-        foreach ($array as $dates) {
-            $update = new CutiDetil();
-            $update->id_cuti = $id_cuti;
-            $format_start_s = strtotime($dates);
-            $update->date_off = date("Y-m-d",$format_start_s);
-            $update->save();
-        }
-
-        $hitung = sizeof($array);
+        $hitung = sizeof($cuti_accept);
 
         $update_cuti = User::where('nik',$nik)->first();
         
         if ($hitung >= $update_cuti->cuti) {
+            Log::debug("$hitung >= $update_cuti->cuti");
+
             $ambil2020 = $hitung - $update_cuti->cuti;
+            Log::debug("$ambil2020 = " . $ambil2020);            
 
             $hasilsisa = $update_cuti->cuti2 - $ambil2020;
+            Log::debug("$hasilsisa = " . $hasilsisa); 
 
             if ($ambil2020 == 0) {
                 $update_cuti->cuti = $update_cuti->cuti - $hitung;
@@ -755,7 +755,7 @@ class HRGAController extends Controller
         }else{
             $update_cuti->cuti = $update_cuti->cuti - $hitung;
         }
-        
+
         $update_cuti->update();
 
         $getStatus  = Cuti::select('status')->where('id_cuti',$id_cuti)->first();
@@ -769,18 +769,53 @@ class HRGAController extends Controller
         $name_cuti = DB::table('tb_cuti')
                 ->join('users','users.nik','=','tb_cuti.nik')
                 ->select('users.name')
-                ->where('id_cuti', $id_cuti)->first();
+                ->where('id_cuti', $id_cuti)->first();  
 
-        $hari = DB::table('tb_cuti')
+        if ($cuti_accept[0] != "") {
+            foreach ($cuti_accept as $accept_dates) {
+                $update = CutiDetil::where('idtb_cuti_detail',$accept_dates)->first();
+                $update->status = 'ACCEPT';
+                $update->update();
+            }
+
+            $cuti_accept_data = DB::table('tb_cuti')
                 ->join('tb_cuti_detail','tb_cuti_detail.id_cuti','=','tb_cuti.id_cuti')
                 ->select(db::raw('count(tb_cuti_detail.id_cuti) as days'),'tb_cuti.date_req','tb_cuti.reason_leave','tb_cuti.status',DB::raw('group_concat(date_off) as dates'),"decline_reason")
-                ->groupby('tb_cuti_detail.id_cuti')
+                ->groupby('tb_cuti_detail.id_cuti')->where('tb_cuti_detail.status','ACCEPT')
                 ->where('tb_cuti.id_cuti', $id_cuti)
                 ->first();
+        }else{
+            $ardetil_after = ""; 
+        
+            $cuti_accept_data = "";  
+        }
+        
 
-        $ardetil = explode(',', $hari->dates); 
+        if ($cuti_reject[0] != "") {
+            foreach ($cuti_reject as $reject_dates) {
+                $update = CutiDetil::where('idtb_cuti_detail',$reject_dates)->first();
+                $update->status = 'REJECT';
+                $update->update();
+            }
 
-        $ardetil_after = "";
+            $cuti_reject_data = DB::table('tb_cuti')
+                ->join('tb_cuti_detail','tb_cuti_detail.id_cuti','=','tb_cuti.id_cuti')
+                ->select(db::raw('count(tb_cuti_detail.id_cuti) as days'),'tb_cuti.date_req','tb_cuti.reason_leave','tb_cuti.status',DB::raw('group_concat(date_off) as dates'),"decline_reason")
+                ->groupby('tb_cuti_detail.id_cuti')->where('tb_cuti_detail.status','REJECT')
+                ->where('tb_cuti.id_cuti', $id_cuti) 
+                ->first();
+
+            $ardetil_after = explode(',', $cuti_reject_data->dates);
+
+        }else{
+            $ardetil_after = ""; 
+        
+            $cuti_reject_data = "";  
+        }            
+
+        $hari = collect(['cuti_accept'=>$cuti_accept_data,'cuti_reject'=>$cuti_reject_data]);
+      
+        $ardetil = explode(',', $cuti_accept_data->dates); 
 
         Mail::to($nik_kirim)->cc('yudhi@sinergy.co.id')->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Approve - Permohonan Cuti'));        
 
@@ -836,12 +871,22 @@ class HRGAController extends Controller
                 ->whereBetween('date_off',array($request->date_start,$request->date_end))
                 ->get(),(int)$request->$cuti);
         }else{
-            return array(DB::table('tb_cuti_detail')
+            if ($request->status == 'detil') {
+                return array(DB::table('tb_cuti_detail')
                 ->join('tb_cuti','tb_cuti.id_cuti','=','tb_cuti_detail.id_cuti')
                 ->join('users','users.nik','=','tb_cuti.nik')
-                ->select('date_off','reason_leave','date_req','tb_cuti_detail.id_cuti','users.nik','decline_reason','status')
+                ->select('date_off','reason_leave','date_req','tb_cuti_detail.id_cuti','users.nik','decline_reason','tb_cuti.status','tb_cuti_detail.status as status_detail','idtb_cuti_detail')
                 ->where('tb_cuti_detail.id_cuti',$cuti)
                 ->get(),(int)$request->$cuti);
+            }else{
+                return array(DB::table('tb_cuti_detail')
+                ->join('tb_cuti','tb_cuti.id_cuti','=','tb_cuti_detail.id_cuti')
+                ->join('users','users.nik','=','tb_cuti.nik')
+                ->select('date_off','reason_leave','date_req','tb_cuti_detail.id_cuti','users.nik','decline_reason','tb_cuti.status','tb_cuti_detail.status as status_detail','idtb_cuti_detail')
+                ->where('tb_cuti_detail.id_cuti',$cuti)
+                ->whereRaw("(`tb_cuti_detail`.`status` = 'NEW' OR `tb_cuti_detail`.`status` = 'ACCEPT' OR `tb_cuti_detail`.`status` = 'REJECT')")
+                ->get(),(int)$request->$cuti);
+            }
         }
         
         
@@ -861,103 +906,132 @@ class HRGAController extends Controller
 
         $id_cuti = $request['id_cuti'];
 
-        $dates_after = $_POST['dates_after'];
+        $dates_after = $request['dates_after'];
 
-        $dates_before = $_POST['dates_before'];
+        $dates_before = $request['dates_before'];
 
-        $array =  explode(',', $dates_after);
+        if($dates_after == 'kosong') {
+            $update = Cuti::where('id_cuti',$id_cuti)->first();
+            $update->reason_leave = $request['reason_edit'];
+            $update->status = $request['status_update'];
+            $update->update();
 
-        $array2 =  explode(',', $dates_before);
+        } else {
+            $array2 = explode(',', $dates_after);
 
-        foreach ($array2 as $dates2) {
-            $delete = CutiDetil::where('date_off',$dates2)->delete();
-        }
+            $array  = explode(',', $dates_before);
 
-        foreach ($array as $dates) {
-            $add = new CutiDetil();
-            $add->id_cuti = $id_cuti;
-            $format_start_s = strtotime($dates);
-            $add->date_off = date("Y-m-d",$format_start_s);
-            $add->save();
-        }
+            $resultA = array_diff($array, $array2);
+            $resultB = array_diff($array2, $array);
 
-        $update = Cuti::where('id_cuti',$id_cuti)->first();
-        $update->reason_leave = $request['reason_edit'];
-        $update->update();
 
-        if ($ter != NULL) { 
-            if ($ter == 'SALES MSP' && $pos == 'STAFF') {
-                $nik_kirim = DB::table('users')->select('users.email')->where('id_position','MANAGER')->where('id_company','2')->first();
-            }else if ($ter == 'OPERATION'){
-                $nik_kirim = DB::table('users')->select('users.email')->where('email','sinung@solusindoperkasa.co.id')->where('id_company','2')->first();
+            if ($resultA) {
+
+                foreach ($resultA as $dates) {
+                    $update_cuti            = CutiDetil::where('date_off',$dates)->where('id_cuti',$id_cuti)->first();
+                    $update_cuti->status    = 'CANCEL';
+                    $update_cuti->update();
+                }
+
+                foreach ($resultB as $dates) {
+                    if (CutiDetil::where('id_cuti',$id_cuti)->whereIn('date_off',$resultB)->get() == '[]') {
+                        $add            = new CutiDetil();
+                        $add->id_cuti   = $id_cuti;
+                        $format_start_s = strtotime($dates);
+                        $add->date_off  = date("Y-m-d",$format_start_s);
+                        $add->status    = 'NEW';
+                        $add->save();  
+                    }                                  
+
+                    CutiDetil::where('id_cuti',$id_cuti)->whereIn('date_off',$array2)->update(['status' => 'NEW']);
+                }
             }
+
+            $update = Cuti::where('id_cuti',$id_cuti)->first();
+            $update->reason_leave = $request['reason_edit'];
+            $update->status = $request['status_update'];
+            $update->update();
+
+            if ($ter != NULL) { 
+                if ($ter == 'SALES MSP' && $pos == 'STAFF') {
+                    $nik_kirim = DB::table('users')->select('users.email')->where('id_position','MANAGER')->where('id_company','2')->first();
+                }else if ($ter == 'OPERATION'){
+                    $nik_kirim = DB::table('users')->select('users.email')->where('email','sinung@solusindoperkasa.co.id')->where('id_company','2')->first();
+                }
+                
+                // $kirim = User::where('email', $nik_kirim->email)->first()->email;
+
+                // $kirim = User::where('email', 'faiqoh@sinergy.co.id')->first();
+
+                $name_cuti = DB::table('tb_cuti')
+                    ->join('users','users.nik','=','tb_cuti.nik')
+                    ->select('users.name','status')
+                    ->where('id_cuti', $id_cuti)->first();
+
+                $hari_cuti = DB::table('tb_cuti')
+                        ->join('tb_cuti_detail','tb_cuti_detail.id_cuti','=','tb_cuti.id_cuti')
+                        ->select(db::raw('count(tb_cuti_detail.id_cuti) as days'),'tb_cuti.date_req','tb_cuti.reason_leave',DB::raw("(CASE WHEN (tb_cuti.status = 'n') THEN 'R' ELSE tb_cuti.status END) as status"),DB::raw('group_concat(date_off) as dates'))
+                        ->groupby('tb_cuti_detail.id_cuti')
+                        ->where('tb_cuti.id_cuti', $id_cuti)
+                        ->where('tb_cuti_detail.status','NEW')
+                        ->first();
+
+                $hari = collect(['cuti_accept'=>$hari_cuti]);
+
+                $hari_before = $_POST['dates_before'];
+
+                $ardetil = explode(',',$hari_before);
+
+                $hari_after = $_POST['dates_after'];
+
+                $ardetil_after = explode(',',$hari_after);
+
+                if($ter == 'SALES MSP' && $pos == 'STAFF' ){
+                    Mail::to($nik_kirim)->cc(['yudhi@sinergy.co.id','ferry@solusindoperkasa.co.id'])->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Permohonan Cuti'));         
+                } else {
+                    Mail::to($nik_kirim)->cc('yudhi@sinergy.co.id')->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Permohonan Cuti'));            
+                }  
             
-            // $kirim = User::where('email', $nik_kirim->email)->first()->email;
-
-            // $kirim = User::where('email', 'faiqoh@sinergy.co.id')->first();
-
-            $name_cuti = DB::table('tb_cuti')
-                ->join('users','users.nik','=','tb_cuti.nik')
-                ->select('users.name','status')
-                ->where('id_cuti', $id_cuti)->first();
-
-            $hari = DB::table('tb_cuti')
-                    ->join('tb_cuti_detail','tb_cuti_detail.id_cuti','=','tb_cuti.id_cuti')
-                    ->select(db::raw('count(tb_cuti_detail.id_cuti) as days'),'tb_cuti.date_req','tb_cuti.reason_leave',DB::raw("(CASE WHEN (status = 'n') THEN 'R' ELSE status END) as status"),DB::raw('group_concat(date_off) as dates'))
-                    ->groupby('tb_cuti_detail.id_cuti')
-                    ->where('tb_cuti.id_cuti', $id_cuti)
-                    ->first();
-
-            $hari_before = $_POST['dates_before'];
-
-            $ardetil = explode(',',$hari_before);
-
-            $hari_after = $_POST['dates_after'];
-
-            $ardetil_after = explode(',',$hari_after);
-
-            if($ter == 'SALES MSP' && $pos == 'STAFF' ){
-                Mail::to($nik_kirim)->cc(['yudhi@sinergy.co.id','ferry@solusindoperkasa.co.id'])->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Permohonan Cuti'));         
-            } else {
-                Mail::to($nik_kirim)->cc('yudhi@sinergy.co.id')->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Permohonan Cuti'));            
-            }  
-        
-        }else{
-            if ($div == 'TECHNICAL' || $div == 'TECHNICAL PRESALES') {
-                $nik_kirim = DB::table('users')->select('users.email')->where('email','sinung@solusindoperkasa.co.id')->where('id_company','2')->first();
             }else{
-                 $nik_kirim = DB::table('users')->select('users.email')->where('email','ferry@solusindoperkasa.co.id')->where('id_company','2')->first();
-            }
-            
-            //
-            // $kirim = User::where('email', $nik_kirim->email)->first()->email;
-            // $kirim = User::where('email', 'faiqoh@sinergy.co.id')->first();
+                if ($div == 'TECHNICAL' || $div == 'TECHNICAL PRESALES') {
+                    $nik_kirim = DB::table('users')->select('users.email')->where('email','sinung@solusindoperkasa.co.id')->where('id_company','2')->first();
+                }else{
+                     $nik_kirim = DB::table('users')->select('users.email')->where('email','ferry@solusindoperkasa.co.id')->where('id_company','2')->first();
+                }
+                
+                //
+                // $kirim = User::where('email', $nik_kirim->email)->first()->email;
+                // $kirim = User::where('email', 'faiqoh@sinergy.co.id')->first();
 
 
-            $name_cuti = DB::table('tb_cuti')
-                ->join('users','users.nik','=','tb_cuti.nik')
-                ->select('users.name','status')
-                ->where('id_cuti', $id_cuti)->first();
+                $name_cuti = DB::table('tb_cuti')
+                    ->join('users','users.nik','=','tb_cuti.nik')
+                    ->select('users.name','status')
+                    ->where('id_cuti', $id_cuti)->first();
 
-            $hari = DB::table('tb_cuti')
-                    ->join('tb_cuti_detail','tb_cuti_detail.id_cuti','=','tb_cuti.id_cuti')
-                    ->select(db::raw('count(tb_cuti_detail.id_cuti) as days'),'tb_cuti.date_req','tb_cuti.reason_leave',DB::raw("(CASE WHEN (status = 'n') THEN 'R' ELSE status END) as status"),DB::raw('group_concat(date_off) as dates'))
-                    ->groupby('tb_cuti_detail.id_cuti')
-                    ->where('tb_cuti.id_cuti', $id_cuti)
-                    ->first();
+                $hari_cuti = DB::table('tb_cuti')
+                        ->join('tb_cuti_detail','tb_cuti_detail.id_cuti','=','tb_cuti.id_cuti')
+                        ->select(db::raw('count(tb_cuti_detail.id_cuti) as days'),'tb_cuti.date_req','tb_cuti.reason_leave',DB::raw("(CASE WHEN (tb_cuti.status = 'n') THEN 'R' ELSE tb_cuti.status END) as status"),DB::raw('group_concat(date_off) as dates'))
+                        ->groupby('tb_cuti_detail.id_cuti')
+                        ->where('tb_cuti.id_cuti', $id_cuti)
+                        ->where('tb_cuti_detail.status','NEW')
+                        ->first();
 
-            $hari_before = $_POST['dates_before'];
+                $hari = collect(['cuti_accept'=>$hari_cuti]);
 
-            $ardetil = explode(',',$hari_before);
+                $hari_before = $_POST['dates_before'];
 
-            $hari_after = $_POST['dates_after'];
+                $ardetil = explode(',',$hari_before);
 
-            $ardetil_after = explode(',',$hari_after);
+                $hari_after = $_POST['dates_after'];
 
-            if( $div == 'TECHNICAL' || $div == 'TECHNICAL PRESALES'){
-                Mail::to($nik_kirim)->cc(['yudhi@sinergy.co.id','ferry@solusindoperkasa.co.id'])->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Permohonan Cuti'));         
-            } else {
-                Mail::to($nik_kirim)->cc('yudhi@sinergy.co.id')->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Permohonan Cuti'));            
+                $ardetil_after = explode(',',$hari_after);
+
+                if( $div == 'TECHNICAL' || $div == 'TECHNICAL PRESALES'){
+                    Mail::to($nik_kirim)->cc(['yudhi@sinergy.co.id','ferry@solusindoperkasa.co.id'])->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Permohonan Cuti'));         
+                } else {
+                    Mail::to($nik_kirim)->cc('yudhi@sinergy.co.id')->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Permohonan Cuti'));            
+                }
             }
         }
 
