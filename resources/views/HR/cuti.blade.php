@@ -82,25 +82,31 @@
   </section>
 
   <section class="content">
+    @if (session('success'))
+      <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
     <div class="box">
       <div class="box-header">
         <h3 class="box-title"><i class="fa fa-table"></i>&nbspLeaving Permit</h3>
           <div class="pull-right">
             @if($cek_cuti->status_karyawan == 'cuti')
-            @if($total_cuti > 0)
-              @if($cek->status == null)
-              <button type="button" class="btn btn-sm btn-primary pull-right add_cuti" value="{{Auth::User()->nik}}" style="margin-left: 10px"><i class="fa fa-plus"> </i> &nbspPermission</button>
-              <button class="btn btn-sm btn-success show-sisa-cuti" value="{{Auth::User()->nik}}">Show Sisa Cuti</button>
-              @elseif($cek_cuti->status != 'n')
-              <button type="button" class="btn btn-sm btn-primary pull-right add_cuti" value="{{Auth::User()->nik}}" style="margin-left: 10px"><i class="fa fa-plus"> </i> &nbspPermission</button>
-              <button class="btn btn-sm btn-success show-sisa-cuti" value="{{Auth::User()->nik}}">Show Sisa Cuti</button>
+              @if($total_cuti > 0)
+                @if($cek->status == null)
+                  <button type="button" class="btn btn-sm btn-primary pull-right add_cuti" value="{{Auth::User()->nik}}" style="margin-left: 10px"><i class="fa fa-plus"> </i> &nbspPermission</button>
+                  <button class="btn btn-sm btn-success show-sisa-cuti" value="{{Auth::User()->nik}}">Show Sisa Cuti</button>
+                @elseif($cek_cuti->status == 'v' || $cek_cuti->status == 'd')
+                  <button type="button" class="btn btn-sm btn-primary pull-right add_cuti" value="{{Auth::User()->nik}}" style="margin-left: 10px"><i class="fa fa-plus"> </i> &nbspPermission</button>
+                  <button class="btn btn-sm btn-success show-sisa-cuti" value="{{Auth::User()->nik}}">Show Sisa Cuti</button>
+                @else
+                  <button type="button" class="btn btn-sm btn-primary pull-right disabled disabled-permission" style="margin-left: 10px"><i class="fa fa-plus"> </i> &nbspPermission</button>
+                @endif
               @else
-              <button type="button" class="btn btn-sm btn-primary pull-right disabled disabled-permission" style="margin-left: 10px"><i class="fa fa-plus"> </i> &nbspPermission</button>
-              @endif
-            @else
-            <button type="button" class="btn btn-sm btn-primary pull-right disabled disabled-permission" style="margin-left: 10px"><i class="fa fa-plus"> </i> &nbspPermission</button>
+                <button type="button" class="btn btn-sm btn-primary pull-right disabled disabled-permission" style="margin-left: 10px"><i class="fa fa-plus"> </i> &nbspPermission</button>
             @endif
           @else
+            <button type="button" class="btn btn-sm bg-navy pull-right disabled disabled-permission" style="margin-left: 10px;width: 100px">
+                <i class="fa fa-plus" style="margin-right: 5px"> </i> Permission
+              </button>
           @endif
           </div>
       </div>
@@ -126,8 +132,8 @@
                         <tr>
                           <th>Employees Name</th>
                           <th>Division</th>
-                          <th>Date of Request</th>
-                          <th>Time Off</th>
+                          <th>Cuti Request</th>
+                          <th>Request Date</th>
                           <th>Status</th>
                           @if(Auth::User()->id_position != 'HR MANAGER' && Auth::User()->id_division != 'HR')
                           <th>Action</th>
@@ -136,7 +142,7 @@
                       </thead>
                       <tbody>
                         @foreach($cuti2 as $data)
-                          @if($data->id_company == '2' && $data->status == 'n')
+                          @if( $data->status == 'n' || $data->status == 'R')
                             <tr>
                               <td>{{$data->name}}</td>
                               @if($data->name_division == "-")
@@ -165,13 +171,13 @@
                               </td>
                               <td>
                                 @if(Auth::User()->nik == $data->nik)
-                                  @if($data->status == NULL || $data->status == 'n')
+                                  @if($data->status == NULL || $data->status == 'n' || $data->status == 'R')
                                   <button class="btn btn-sm btn-primary fa fa-edit" style="width:35px;height:30px;border-radius: 25px!important;outline: none;" id="btn-edit" data-toggle="tooltip" title="Edit" data-placement="bottom" value="{{$data->id_cuti}}" type="button"></button>
                                   <a href="{{ url('delete_cuti', $data->id_cuti) }}"><button class="btn btn-sm btn-danger fa fa-trash" style="width:35px;height:30px;border-radius: 25px!important;outline: none;" onclick="return confirm('Are you sure want to delete this?')" data-toggle="tooltip" title="Delete" data-placement="bottom" type="button"></button></a>
                                   <a href="{{ url('follow_up',$data->id_cuti)}}"><button class="btn btn-sm btn-success fa fa-paper-plane" style="width:35px;height:30px;border-radius: 25px!important;outline: none;" data-toggle="tooltip" title="Follow Up Cuti" data-placement="bottom" type="button"></button></a>
                                   @endif
                                 @else
-                                  @if($data->status == NULL || $data->status == 'n')
+                                  @if($data->status == NULL || $data->status == 'n' || $data->status == 'R')
                                       <button name="approve_date" id="approve_date" class="approve_date btn btn-success btn-xs" style="width: 60px" value="{{$data->id_cuti}}" >Approve</button>
                                       <button class="btn btn-xs btn-danger" style="vertical-align: top; width: 60px; margin-left: 5px" data-target="#reason_decline" data-toggle="modal" onclick="decline('{{$data->id_cuti}}','{{$data->decline_reason}}')">Decline</button>
                                   @else
@@ -362,42 +368,41 @@
           <h4 class="modal-title">Leaving Permit</h4>
         </div>
         <div class="modal-body">
-          <form method="POST" action="{{url('/approve_cuti')}}">
-            @csrf
-            <input type="" name="id_cuti_detil_approve" id="id_cuti_detil_approve" hidden>
-            <input type="" name="nik_cuti" id="nik_cuti" hidden>
-            <div class="form-group">
-                <label>Date Of Request</label>
-                <input type="text" class="form-control" id="date_request_detil" name="date_request_detil" readonly>
-            </div>
+          <input type="" name="id_cuti_detil_approve" id="id_cuti_detil_approve" hidden>
+          <input type="" name="nik_cuti" id="nik_cuti" hidden>
+          <div class="form-group">
+              <label>Date Of Request</label>
+              <input type="text" class="form-control" id="date_request_detil" name="date_request_detil" readonly>
+          </div>
 
-            <div class="form-group">
-                <label>List Request Date Off</label>
-                <table class="table table-bordered" id="detil_cuy" style="margin-top: 10px">
-                  <tbody id="tanggal_cuti" class="tanggal_cuti">
-                    
-                  </tbody>
-                </table>
+          <div class="form-group">
+              <label>List Request Date Off<i style="color: red">(mark date for approve)</i></label>
+              <table class="table table-bordered" id="detil_cuy" style="margin-top: 10px">
+                <tbody id="tanggal_cuti" class="tanggal_cuti">
+                  
+                </tbody>
+              </table>
 
-                <input type="text" id="cuti_fix" name="cuti_fix" hidden>
-            </div>
+              <input type="text" id="cuti_fix" name="cuti_fix" hidden>
+              <input type="text" id="cuti_fix_accept" name="cuti_fix_accept" hidden> 
+              <input type="text" id="cuti_fix_reject" name="cuti_fix_reject" hidden> 
+          </div>
 
-            <div class="form-group" style="display: none;" id="alasan_reject">
-              <span style="color: red"><sup>*harus diisi</sup></span>
-              <label>Notes Reject Cuti (Pengurangan tanggal cuti)</label>
-              <textarea class="form-control" class="reason_reject" name="reason_reject" id="reason_reject"></textarea>
-            </div>
+          <div class="form-group" style="display: none;" id="alasan_reject">
+            <span style="color: red"><sup>*harus diisi</sup></span>
+            <label>Notes Reject Cuti (Pengurangan tanggal cuti)</label>
+            <textarea class="form-control" class="reason_reject" name="reason_reject" id="reason_reject" rows="5" style="resize: none;overflow-y: auto;"></textarea>
+          </div>
 
-            <div class="form-group">
-                <label>Jenis Cuti/Keterangan</label>
-                <textarea class="form-control" type="text" id="reason_detil" name="reason_detil" readonly></textarea>
-            </div>      
-             
-            <div class="modal-footer">
-              <button type="submit" id="submit_approve" class="btn btn-success"><i class=" fa fa-check"></i>&nbspApprove</button>
-              <button type="button" class="btn btn-default" data-dismiss="modal"><i class=" fa fa-times"></i>&nbspClose</button>
-            </div>
-        </form>
+          <div class="form-group">
+              <label>Jenis Cuti/Keterangan</label>
+              <textarea class="form-control" type="text" id="reason_detil" name="reason_detil" readonly></textarea>
+          </div>      
+           
+          <div class="modal-footer">
+            <button type="submit" id="submit_approve" disabled class="btn btn-success"><i class=" fa fa-check"></i>&nbspApprove</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal"><i class=" fa fa-times"></i>&nbspClose</button>
+          </div>
         </div>
       </div>
     </div>
@@ -522,6 +527,7 @@
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
   <script type="text/javascript">
     
     $('#datatables').DataTable()
@@ -535,8 +541,7 @@
           var d = new Date().getFullYear() - 1;
           var dd = new Date().getFullYear();
           var swal_html = '<div class="panel" style="background:aliceblue;font-weight:bold"><div class="panel-heading panel-info text-center btn-info"> <b>Berikut Info total cuti : </b> </div> <div class="panel-body"><table class="text-center"><b><p style="font-weight:bold">Total cuti '+ d +' (*digunakan s/d 31 Maret) : '+result[0].cuti+'</p><p style="font-weight:bold">Total cuti '+ dd +' : '+result[0].cuti2+'</p></b></div></div></div>';
-          swal({title: "Hai "+result[0].name+" !!", html: swal_html})
-          
+          swal.fire({title: "Hai "+result[0].name+" !!", html: swal_html})
         },
       });
     });
@@ -582,28 +587,28 @@
             todayHighlight: true,
             multidate: true,
             datesDisabled: disableDate,
-            // beforeShowDay: function(date){
-            //   var index = hari_libur_nasional.indexOf(moment(date).format("MM/DD/YYYY"))
-            //   if(index > 0){
-            //     return {
-            //       enabled: false,
-            //       tooltip: hari_libur_nasional_tooltip[index],
-            //       classes: 'hari_libur'
-            //     };
-            //   } else if(disableDate.indexOf(moment(date).format("MM/DD/YYYY")) > 0) {
-            //     return {
-            //       enabled: false,
-            //       tooltip: 'Cuti Pribadi',
-            //     };
-            //   }
-            // },
+            beforeShowDay: function(date){
+              var index = hari_libur_nasional.indexOf(moment(date).format("MM/DD/YYYY"))
+              if(index > 0){
+                return {
+                  enabled: false,
+                  tooltip: hari_libur_nasional_tooltip[index],
+                  classes: 'hari_libur'
+                };
+              } else if(disableDate.indexOf(moment(date).format("MM/DD/YYYY")) > 0) {
+                return {
+                  enabled: false,
+                  tooltip: 'Cuti Pribadi',
+                };
+              }
+            },
           }).on('changeDate', function(e) {
             $('#lihat_hasil').val(' ' + e.dates.length)
             var cutis = $("#sisa_cuti").text();
             var cutiss = $(".lihat_hasil").val();
             // console.log(cutis + " " + cutiss)
 
-            // $("#avaliableDays").val(result.parameterCuti.total_cuti - cutiss)
+            $("#avaliableDays").val(result.parameterCuti.total_cuti - cutiss)
             if (parseFloat(cutis) >= parseFloat(cutiss)) {
               e.preventDefault();     
               $(".btn-submit").prop('disabled', false);
@@ -622,9 +627,6 @@
     })
 
     $(document).on('click',"button[id^='btn-edit']",function(e) {
-
-      console.log('coba');
-
       $.ajax({
           type:"GET",
           url:'/detilcuti',
@@ -656,7 +658,8 @@
                 weekStart: 1,
                 daysOfWeekDisabled: "0,6",
                 daysOfWeekHighlighted: [0,6],
-                startDate: moment().format("MM/DD/YYYY"),
+                startDate: moment().format("YYYY-MM-DD"),
+                format: 'yyyy-mm-dd',
                 todayHighlight: true,
                 multidate: true,
                 datesDisabled: disableDate,
@@ -692,26 +695,66 @@
       });
 
       $(document).on('click',"button[id^='btn-submit-update']",function(e){
-        console.log($("#Dates").val());
-        $.ajax({
-          type:"POST",
-          url:"{{url('/update_cuti')}}",
-          data:{
-             _token: "{{ csrf_token() }}",
-            id_cuti:$("#id_cuti").val(),
-            dates_after:$("#Dates").val(),
-            dates_before:$("#Dates_update").val(),
-            reason_edit:$("#reason_edit").val(),
-            status_update:'R',
-          },
-          success:function(result){
-            location.reload()
+        
+        if ($("#Dates").val() == '') {
+          var dates_after = 'kosong';
+        }else{
+          var dates_after = $("#Dates").val();
+        }
+
+        Swal.fire({
+          title: 'Are you sure?',
+          text: "to update your leaving permite",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Yes',
+          cancelButtonText: 'No',
+        }).then((result) => {
+          if (result.value) {
+            Swal.fire({
+              title: 'Please Wait..!',
+              text: "It's sending..",
+              allowOutsideClick: false,
+              allowEscapeKey: false,
+              allowEnterKey: false,
+              customClass: {
+                popup: 'border-radius-0',
+              },
+              onOpen: () => {
+                Swal.showLoading()
+              }
+            })
+            $.ajax({
+              type:"POST",
+              url:"{{url('/update_cuti')}}",
+              data:{
+                 _token: "{{ csrf_token() }}",
+                id_cuti:$("#id_cuti").val(),
+                dates_after:dates_after,
+                dates_before:$("#Dates_update").val(),
+                reason_edit:$("#reason_edit").val(),
+                status_update:'R',
+              },
+              success: function(result){
+                Swal.showLoading()
+                Swal.fire(
+                  'Updated!',
+                  'Leaving permite has been update.',
+                  'success'
+                ).then((result) => {
+                  if (result.value) {
+                    $("#modalCuti_edit").modal('hide');
+                    location.reload();
+                  }
+                })
+              }
+            })
           }
-        })
-        $('#tunggu').modal('show')
-        $('#modalCuti_edit').modal('hide')
-        setTimeout(function() {$('#tunggu').modal('hide');}, 1000);
+        })        
       })
+
     });
 
     $(document).on('click',"button[class^='date_off']",function(e) {
@@ -721,6 +764,7 @@
           url:'{{url("detilcuti")}}',
           data:{
             cuti:this.value,
+            status:'detil'
           },
           success: function(result){
             var table = "";
@@ -730,7 +774,11 @@
               $("#reason_detils").val(value.reason_leave);
               $('#tanggal_cutis').empty();
               table = table + '<tr>';
-              table = table + '<td>' + moment(value.date_off).format('LL'); +'</td>';
+              if (value.status_detail == 'ACCEPT') {
+                table = table + '<td>' + moment(value.date_off).format('LL') +' <b style="color:green">('+ value.status_detail +')</b></td>'
+              }else{
+                table = table + '<td>' + moment(value.date_off).format('LL') +' <b style="color:red">('+ value.status_detail +')</b></td>'
+              }
               table = table + '</tr>';
 
               if (value.decline_reason != null) {
@@ -770,6 +818,7 @@
           },
           success: function(result){
             var table = "";
+            var date_default = []
 
             $.each(result[0], function(key, value){
               $("#id_cuti_detil_approve").val(value.id_cuti);
@@ -779,7 +828,7 @@
               $("#time_off").val(value.days);
               $('#tanggal_cuti').empty();
               table = table + '<tr>';
-              table = table + '<td>' + '<input type="checkbox" class="check_date" checked name="check_date[]"' +'</td>';
+              table = table + '<td>' + '<input type="checkbox" class="check_date" name="check_date[]"' +'</td>';
               table = table + '<td hidden>' + value.date_off +'</td>';
               table = table + '<td>' + moment(value.date_off).format('LL'); +'</td>';
               table = table + '</tr>';
@@ -795,50 +844,134 @@
               var n = $( ".check_date:checked" ).length;
               console.log( n + (n === 1 ? " is" : " are") + " checked!")
 
-              if (date_check != $( ".check_date:checked" ).length) {
+              if ($( ".check_date:checked" ).length < 1) {
+                $("#submit_approve").prop("disabled",true);
                 $("#alasan_reject").css("display", "block");
                 $("#reason_reject").prop('required',true);
               }else{
-                $("#alasan_reject").css("display", "none");
+                if ($(".check_date:checked" ).length == result[0].length) {
+                  $("#alasan_reject").css("display", "none");
+                }else{
+                  $("#alasan_reject").css("display", "block");
+                }
+                $("#submit_approve").prop("disabled",false);
                 $("#reason_reject").prop('required',false);
               }
-
             };
-            countChecked();
+            // countChecked();
        
-            $( ".check_date" ).on( "click", countChecked );
-
+            $(".check_date").on("click", function(){  
+                countChecked()
+                $("#cuti_fix_accept").val("")
+                $("#cuti_fix_reject").val("")
+                var accept = [];
+                var selector1 = '#detil_cuy tr input:checked'; 
+                var reject = [];
+                var selector2 = '#detil_cuy tr input:checkbox:not(:checked)'
+                console.log('check')
+                $.each($(selector1), function(idx, val) {
+                  var id = $(this).parent().siblings(":first").text();
+                  accept.push(id);
+                  console.log($(this).parent().siblings(":first").text())
+                  $("#cuti_fix_accept").val(accept)
+                });
+                $.each($(selector2), function(idx, val) {   
+                  var id = $(this).parent().siblings(":first").text();                    
+                  reject.push(id);
+                  console.log($(this).parent().siblings(":first").text())
+                  $("#cuti_fix_reject").val(reject)
+                });
+            })
           }
         });
 
         $("#detail_cuti").modal("show");
     });
 
-      $('#submit_approve').click(function(){
-        var updates = [];
-        var selector = '#detil_cuy tr input:checked'; 
-        $.each($(selector), function(idx, val) {
-          var id = $(this).parent().siblings(":first").text();
-          updates.push(id);
-        });
+    // $('#submit_approve').click(function(){
+    //   var updates = [];
+    //   var selector = '#detil_cuy tr input:checked'; 
+    //   $.each($(selector), function(idx, val) {
+    //     var id = $(this).parent().siblings(":first").text();
+    //     updates.push(id);
+    //   });
 
-        $("#cuti_fix").val(updates.join(","));
+    //   $("#cuti_fix").val(updates.join(","));
 
-      });
+    // });
 
 
-    // var hari_libur_nasional = []
-    // var hari_libur_nasional_tooltip = []
-    // $.ajax({
-    //   type:"GET",
-    //   url:"https://www.googleapis.com/calendar/v3/calendars/en.indonesian%23holiday%40group.v.calendar.google.com/events?key={{env('GOOGLE_API_YEY')}}",
-    //   success: function(result){
-    //     $.each(result.items,function(key,value){
-    //       hari_libur_nasional.push(moment( value.start.date).format("MM/DD/YYYY"))
-    //       hari_libur_nasional_tooltip.push(value.summary)
-    //     })
-    //   }
-    // })
+    $('#submit_approve').click(function(){  
+      // $("#cuti_fix").val(updates.join(","));
+      Swal.fire({
+        title: 'Submit',
+        text: "Anda yakin?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes',
+        cancelButtonText: 'No',
+      }).then((result) => {
+        if (result.value) {
+          Swal.fire({
+            title: 'Please Wait..!',
+            text: "It's updating..",
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            allowEnterKey: false,
+            customClass: {
+              popup: 'border-radius-0',
+            },
+            onOpen: () => {
+              Swal.showLoading()
+            }
+          })
+          $.ajax({
+            type:"POST",
+            url:"{{url('approve_cuti')}}",
+            data:{
+              _token:"{{csrf_token()}}",
+              id_cuti_detil:$('#id_cuti_detil_approve').val(),
+              nik_cuti:$('#nik_cuti').val(),
+              reason_reject:$('#reason_reject').val(),
+              cuti_fix_accept:$('#cuti_fix_accept').val(),
+              cuti_fix_reject:$('#cuti_fix_reject').val()
+            },
+            success: function(result){
+              Swal.showLoading()
+              Swal.fire(
+                'Successfully!',
+                'success'
+              ).then((result) => {
+                if (result.value) {
+                  location.reload()
+                  $("#detail_cuti").modal('toggle')
+                }
+              })
+            },
+          });
+        }        
+      })
+    })
+
+
+    var hari_libur_nasional = []
+    var hari_libur_nasional_tooltip = []
+    $.ajax({
+      type:"GET",
+      url:"https://www.googleapis.com/calendar/v3/calendars/en.indonesian%23holiday%40group.v.calendar.google.com/events?key={{env('GOOGLE_API_YEY')}}",
+      success: function(result){
+        $.each(result.items,function(key,value){
+          hari_libur_nasional.push(moment( value.start.date).format("MM/DD/YYYY"))
+          hari_libur_nasional_tooltip.push(value.summary)
+        })
+      }
+    })
+
+    $(".alert").fadeTo(2000, 500).slideUp(500, function(){
+      $(".alert").slideUp(300);
+    });
 
   </script>
 @endsection
