@@ -58,11 +58,11 @@
                 @endforeach
               </tbody>
               <tfoot>
-                @if(Auth::User()->id_division != 'FINANCE')
+               <!--  @if(Auth::User()->id_division != 'FINANCE')
                   <th colspan="5" style="text-align: right;">Total Amount:</th>
                   <th><i>Rp</i><i  class="money">{{$total_ter}},00</i></p></th>
                   <th colspan="2"></th>
-                @endif
+                @endif -->
               </tfoot>
             </table>
           </div>
@@ -81,13 +81,13 @@
    <script type="text/javascript">
      $('.money').mask('000,000,000,000,000.00', {reverse: true});
 
-     $('#data_Table').DataTable( {
-      "order": [[ 0, "desc" ]],
-        // scrollX:        true,
-        scrollCollapse: true,
-        fixedColumns:   {
-            leftColumns: 4
-        },
+    $('#data_Table').DataTable( {
+    "order": [[ 0, "desc" ]],
+      // scrollX:        true,
+      scrollCollapse: true,
+      fixedColumns:   {
+          leftColumns: 4
+      },
     });
    </script>
 @endsection
