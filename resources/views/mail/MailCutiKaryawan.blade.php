@@ -1,7 +1,7 @@
 <style type="text/css">
 </style>
 <div style="color: #141414;font-family: 'Source Sans Pro','Helvetica Neue',Helvetica,Arial,sans-serif;">
-	@if($hari->status == 'v')
+	@if($hari['cuti_accept']->status == 'v')
 	<p>
 		Hello Sinergy,
 		<br>Hore Cuti Kamu di Approve! Berikut Detail cuti kamu:
@@ -15,10 +15,10 @@
 		<tr>
 			<th>Lama Cuti</th>
 			<th> : </th>
-			<td>{{$hari->days}} hari</td>
+			<td>{{$hari['cuti_accept']->days}} hari</td>
 		</tr>
 		<tr>
-			<th>Tanggal Off cuti sbb</th>
+			<th>Tanggal Off cuti <b style="color: green">(approved)</b></th>
 			<th> : </th>
 		</tr>
 		<tr>
@@ -35,18 +35,52 @@
 			</td>
 		</tr>
 		<tr>
+			<th>Tanggal Off cuti <b style="color: red">(rejected)<b></th>
+			<th> : </th>
+		</tr>
+		<tr>
+			<td>
+				@if($ardetil_after != null)
+					@foreach($ardetil_after as $data)
+					<ul>
+						
+						<li>
+							{{date('d-M-Y', strtotime($data))}}
+						</li>
+						
+					</ul>
+					@endforeach
+				@else
+				-
+				@endif				
+			</td>
+		</tr>
+		<tr>
+			<th>
+				Alasan reject cuti
+			</th>
+			<th> : </th>
+			<td>
+				@if($hari['cuti_reject'] != '')
+					{{$hari['cuti_reject']->decline_reason}}
+				@else
+				 -
+				@endif
+			</td>
+		</tr>
+		<tr>
 			<th>Tanggal Request Cuti</th>
 			<th> : </th>
-			<td>{{date('d-M-Y', strtotime($hari->date_req))}}</td>
+			<td>{{date('d-M-Y', strtotime($hari['cuti_accept']->date_req))}}</td>
 		</tr>
 		<tr>
 			<th>Note</th>
 			<th> : </th>
-			<td>{{$hari->reason_leave}}</td>
+			<td>{{$hari['cuti_accept']->reason_leave}}</td>
 		</tr>
 	</table>
 	<br>
-	@elseif($hari->status == 'd')
+	@elseif($hari['cuti_accept']->status == 'd')
 	<p>
 		Hello Sinergy,
 		<br>Sorry Cuti Kamu di Decline sama Bos! Berikut Detail cuti kamu:
@@ -60,7 +94,7 @@
 		<tr>
 			<th>Lama Cuti</th>
 			<th> : </th>
-			<td>{{$hari->days}} hari</td>
+			<td>{{$hari['cuti_accept']->days}} hari</td>
 		</tr>
 		<tr>
 			<th>Tanggal Off cuti sbb</th>
@@ -82,17 +116,76 @@
 		<tr>
 			<th>Tanggal Request Cuti</th>
 			<th> : </th>
-			<td>{{date('d-M-Y', strtotime($hari->date_req))}}</td>
+			<td>{{date('d-M-Y', strtotime($hari['cuti_accept']->date_req))}}</td>
 		</tr>
 		<tr>
 			<th>Note</th>
 			<th> : </th>
-			<td>{{$hari->reason_leave}}</td>
+			<td>{{$hari['cuti_accept']->reason_leave}}</td>
 		</tr>
 		<tr>
-			<th>Note decline</th>
+			<th>Decline Reason</th>
 			<th> : </th>
-			<td>{{$hari->decline_reason}}</td>
+			<td>{{$hari['cuti_accept']->decline_reason}}</td>
+		</tr>
+	</table>
+	<br>
+	@elseif($hari['cuti_accept']->status == 'R')
+	<p>
+		Hai Bos,
+		<br>Berikut Re-schedule Perizinan Cuti oleh:
+	</p>
+	<table style="text-align: left;margin: 5px;">
+		<tr>
+			<th>Nama</th>
+			<th> : </th>
+			<td>{{$name_cuti->name}}</td>
+		</tr>
+		<tr>
+			<th>Lama Cuti</th>
+			<th> : </th>
+			<td>{{$hari['cuti_accept']->days}} hari</td>
+		</tr>
+		<tr>
+			<th>Tanggal Off cuti sebelumnya sbb</th>
+			<th> : </th>
+		</tr>
+		<tr>
+			<td>
+				@foreach($ardetil as $data)
+				<ul>
+					
+					<li>
+						{{date('d-M-Y', strtotime($data))}}
+					</li>
+					
+				</ul>
+				@endforeach
+			</td>
+		</tr>
+		@if($ardetil_after != "")
+		<tr>
+			<th>Tanggal Off cuti re-schedule sbb</th>
+			<th> : </th>
+		</tr>
+		<tr>
+			<td>
+				@foreach($ardetil_after as $data)
+				<ul>
+					
+					<li>
+						{{date('d-M-Y', strtotime($data))}}
+					</li>
+					
+				</ul>
+				@endforeach
+			</td>
+		</tr>
+		@endif
+		<tr>
+			<th>Tanggal Request Cuti</th>
+			<th> : </th>
+			<td>{{date('d-M-Y', strtotime($hari['cuti_accept']->date_req))}}</td>
 		</tr>
 	</table>
 	<br>
@@ -110,7 +203,7 @@
 		<tr>
 			<th>Lama Cuti</th>
 			<th> : </th>
-			<td>{{$hari->days}} hari</td>
+			<td>{{$hari['cuti_accept']->days}} hari</td>
 		</tr>
 		<tr>
 			<th>Tanggal Off cuti sbb</th>
@@ -132,12 +225,12 @@
 		<tr>
 			<th>Tanggal Request Cuti</th>
 			<th> : </th>
-			<td>{{date('d-M-Y', strtotime($hari->date_req))}}</td>
+			<td>{{date('d-M-Y', strtotime($hari['cuti_accept']->date_req))}}}</td>
 		</tr>
 		<tr>
 			<th>Note</th>
 			<th> : </th>
-			<td>{{$hari->reason_leave}}</td>
+			<td>{{$hari['cuti_accept']->reason_leave}}</td>
 		</tr>
 	</table>
 	<br>
