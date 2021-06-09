@@ -14,6 +14,13 @@ use PDF;
 
 use Excel;
 
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
 class ReportController extends Controller
 {
     /**
@@ -217,25 +224,30 @@ class ReportController extends Controller
         $position = DB::table('users')->select('id_position')->where('nik', $nik)->first();
         $pos = $position->id_position;
 
+        $year = date("Y");
+
         if ($pos == 'DIRECTOR' || $div == 'TECHNICAL' && $pos == 'MANAGER') {
             $datas = Sales2::join('users', 'users.nik', '=', 'sales_lead_register.nik')
                     ->join('tb_contact', 'sales_lead_register.id_customer', '=', 'tb_contact.id_customer')
                     ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.customer_legal_name', 'tb_contact.brand_name','sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result', 'sales_lead_register.status_sho')
-                    ->where('year','2019')
+                    ->where('year', $year)
+                    ->where('users.id_company', '2')
                     ->get();
-        }else if ($div == 'SALES' && Auth::User()->id_company == '1') {
+        }else if ($div == 'SALES') {
             $datas = Sales2::join('users', 'users.nik', '=', 'sales_lead_register.nik')
                     ->join('tb_contact', 'sales_lead_register.id_customer', '=', 'tb_contact.id_customer')
                     ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.customer_legal_name', 'tb_contact.brand_name','sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result', 'sales_lead_register.status_sho')
                     ->where('id_territory', $ter)
-                    ->where('year','2019')
+                    ->where('year',$year)
+                    ->where('users.id_company', '2')
                     ->get();
         }else{
             $datas = Sales2::join('users', 'users.nik', '=', 'sales_lead_register.nik')
                     ->join('tb_contact', 'sales_lead_register.id_customer', '=', 'tb_contact.id_customer')
                     ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.customer_legal_name', 'tb_contact.brand_name','sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result', 'sales_lead_register.status_sho')
                     ->where('id_territory', $ter)
-                    ->where('year','2019')
+                    ->where('year',$year)
+                    ->where('users.id_company', '2')
                     ->get();
         }
         
@@ -324,25 +336,27 @@ class ReportController extends Controller
         $position = DB::table('users')->select('id_position')->where('nik', $nik)->first();
         $pos = $position->id_position;
 
+        $year = date("Y");
+
         if ($pos == 'DIRECTOR' || $div == 'TECHNICAL' && $pos == 'MANAGER') {
             $datas = Sales2::join('users', 'users.nik', '=', 'sales_lead_register.nik')
                     ->join('tb_contact', 'sales_lead_register.id_customer', '=', 'tb_contact.id_customer')
                     ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.customer_legal_name', 'tb_contact.brand_name','sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result', 'sales_lead_register.status_sho')
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->get();
         }else if ($div == 'SALES' && Auth::User()->id_company == '1') {
             $datas = Sales2::join('users', 'users.nik', '=', 'sales_lead_register.nik')
                     ->join('tb_contact', 'sales_lead_register.id_customer', '=', 'tb_contact.id_customer')
                     ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.customer_legal_name', 'tb_contact.brand_name','sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result', 'sales_lead_register.status_sho')
                     ->where('id_territory', $ter)
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->get();
         }else{
             $datas = Sales2::join('users', 'users.nik', '=', 'sales_lead_register.nik')
                     ->join('tb_contact', 'sales_lead_register.id_customer', '=', 'tb_contact.id_customer')
                     ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.customer_legal_name', 'tb_contact.brand_name','sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result', 'sales_lead_register.status_sho')
                     ->where('id_territory', $ter)
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->get();
         }
 
@@ -432,25 +446,27 @@ class ReportController extends Controller
         $position = DB::table('users')->select('id_position')->where('nik', $nik)->first();
         $pos = $position->id_position;
 
+        $year = date("Y");
+
         if ($pos == 'DIRECTOR' || $div == 'TECHNICAL' && $pos == 'MANAGER') {
             $datas = Sales2::join('users', 'users.nik', '=', 'sales_lead_register.nik')
                     ->join('tb_contact', 'sales_lead_register.id_customer', '=', 'tb_contact.id_customer')
                     ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.customer_legal_name', 'tb_contact.brand_name','sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result', 'sales_lead_register.status_sho')
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->get();
         }else if ($div == 'SALES' && Auth::User()->id_company == '1') {
             $datas = Sales2::join('users', 'users.nik', '=', 'sales_lead_register.nik')
                     ->join('tb_contact', 'sales_lead_register.id_customer', '=', 'tb_contact.id_customer')
                     ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.customer_legal_name', 'tb_contact.brand_name','sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result', 'sales_lead_register.status_sho')
                     ->where('id_territory', $ter)
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->get();
         }else{
             $datas = Sales2::join('users', 'users.nik', '=', 'sales_lead_register.nik')
                     ->join('tb_contact', 'sales_lead_register.id_customer', '=', 'tb_contact.id_customer')
                     ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.customer_legal_name', 'tb_contact.brand_name','sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result', 'sales_lead_register.status_sho')
                     ->where('id_territory', $ter)
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->get();
         }
 
@@ -518,25 +534,27 @@ class ReportController extends Controller
         $position = DB::table('users')->select('id_position')->where('nik', $nik)->first();
         $pos = $position->id_position;
 
+        $year = date("Y");
+
         if ($pos == 'DIRECTOR' || $div == 'TECHNICAL' && $pos == 'MANAGER') {
             $datas = Sales2::join('users', 'users.nik', '=', 'sales_lead_register.nik')
                     ->join('tb_contact', 'sales_lead_register.id_customer', '=', 'tb_contact.id_customer')
                     ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.customer_legal_name', 'tb_contact.brand_name','sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result', 'sales_lead_register.status_sho')
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->get();
         }else if ($div == 'SALES' && Auth::User()->id_company == '1') {
             $datas = Sales2::join('users', 'users.nik', '=', 'sales_lead_register.nik')
                     ->join('tb_contact', 'sales_lead_register.id_customer', '=', 'tb_contact.id_customer')
                     ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.customer_legal_name', 'tb_contact.brand_name','sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result', 'sales_lead_register.status_sho')
                     ->where('id_territory', $ter)
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->get();
         }else{
             $datas = Sales2::join('users', 'users.nik', '=', 'sales_lead_register.nik')
                     ->join('tb_contact', 'sales_lead_register.id_customer', '=', 'tb_contact.id_customer')
                     ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.customer_legal_name', 'tb_contact.brand_name','sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result', 'sales_lead_register.status_sho')
                     ->where('id_territory', $ter)
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->get();
         }
 
@@ -582,6 +600,8 @@ class ReportController extends Controller
         $position = DB::table('users')->select('id_position')->where('nik', $nik)->first();
         $pos = $position->id_position;
 
+        $year = date("Y");
+
         // count semua lead
         if ($div == 'SALES') {
             if($pos == 'MANAGER') {
@@ -590,7 +610,7 @@ class ReportController extends Controller
                             ->join('tb_contact', 'sales_lead_register.id_customer', '=', 'tb_contact.id_customer')
                             ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.brand_name',
                             'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
-                            ->where('year','2019')
+                            ->where('year',$year)
                             ->where('id_company','2')
                             ->where('result','!=','hmm')
                             ->get();
@@ -600,7 +620,7 @@ class ReportController extends Controller
                             ->join('tb_contact', 'sales_lead_register.id_customer', '=', 'tb_contact.id_customer')
                             ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.brand_name',
                             'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
-                            ->where('year','2019')
+                            ->where('year',$year)
                             ->where('id_company','2')
                             ->where('result','!=','hmm')
                             ->where('sales_lead_register.nik', $nik)
@@ -613,7 +633,7 @@ class ReportController extends Controller
                     ->join('tb_contact', 'sales_lead_register.id_customer', '=', 'tb_contact.id_customer')
                     ->select('sales_lead_register.lead_id','tb_contact.brand_name', 'sales_lead_register.opp_name',
                     'sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result')
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->where('id_company','2')
                     ->where('result','!=','hmm')
                     ->get();
@@ -625,7 +645,7 @@ class ReportController extends Controller
                     ->select('sales_lead_register.lead_id','tb_contact.brand_name', 'sales_lead_register.opp_name',
                     'sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result')
                     ->where('sales_solution_design.nik', $nik)
-                    ->where('year','2019')
+                    ->where('year',$years)
                     ->where('id_company','2')
                     ->where('result','!=','hmm')
                     ->get();
@@ -637,7 +657,7 @@ class ReportController extends Controller
                 ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.brand_name',
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                 ->where('result','win')
-                ->where('year','2019')
+                ->where('year',$year)
                 ->where('id_company','2')
                 ->get();
         } else {
@@ -646,7 +666,7 @@ class ReportController extends Controller
                 ->join('tb_contact', 'sales_lead_register.id_customer', '=', 'tb_contact.id_customer')
                 ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.brand_name',
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
-                ->where('year','2019')
+                ->where('year',$year)
                 ->where('id_company','2')
                 ->where('result','!=','hmm')
                 ->get();
@@ -656,7 +676,7 @@ class ReportController extends Controller
             if($pos == 'MANAGER') {
                 $total_ter = DB::table("sales_lead_register")
                                 ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
-                                ->where('year','2019')
+                                ->where('year',$year)
                                 ->where('id_company','2')
                                 ->where('result','!=','hmm')
                                 ->sum('amount');
@@ -665,7 +685,7 @@ class ReportController extends Controller
                                 ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
                                 ->join('sales_solution_design', 'sales_solution_design.lead_id', '=', 'sales_lead_register.lead_id')
                                 ->where('sales_solution_design.nik', $nik)
-                                ->where('year','2019')
+                                ->where('year',$year)
                                 ->where('id_company','2')
                                 ->where('result','!=','hmm')
                                 ->sum('amount');
@@ -674,14 +694,14 @@ class ReportController extends Controller
             if($pos == 'MANAGER') {
                 $total_ter = DB::table("sales_lead_register")
                                 ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
-                                ->where('year','2019')
+                                ->where('year',$year)
                                 ->where('id_company','2')
                                 ->where('result','!=','hmm')
                                 ->sum('amount');
             } else {
                 $total_ter = DB::table("sales_lead_register")
                                 ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
-                                ->where('year','2019')
+                                ->where('year',$year)
                                 ->where('id_company','2')
                                 ->where('result','!=','hmm')
                                 ->where('sales_lead_register.nik', $nik)
@@ -690,7 +710,7 @@ class ReportController extends Controller
         } else {
             $total_ter = DB::table("sales_lead_register")
                             ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
-                            ->where('year','2019')
+                            ->where('year',$year)
                             ->where('id_company','2')
                             ->where('result','!=','hmm')
                             ->sum('amount');
@@ -851,6 +871,8 @@ class ReportController extends Controller
         $position = DB::table('users')->select('id_position')->where('nik', $nik)->first();
         $pos = $position->id_position;
 
+        $year = date("Y");
+
         if($div == 'SALES') {
             if($pos == 'MANAGER') {
                 $open = DB::table('sales_lead_register')
@@ -859,7 +881,7 @@ class ReportController extends Controller
                     ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.brand_name',
                     'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                     ->where('result', '')
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->where('id_company','2')
                     ->get();
             } else {
@@ -870,7 +892,7 @@ class ReportController extends Controller
                     'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                     ->where('result', '')
                     ->where('sales_lead_register.nik', $nik)
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->where('id_company','2')
                     ->get();
             }
@@ -883,7 +905,7 @@ class ReportController extends Controller
                     ->select('sales_lead_register.lead_id','tb_contact.brand_name', 'sales_lead_register.opp_name',
                     'sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result')
                     ->where('result', '')
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->where('id_company','2')
                     ->get();
             } else {
@@ -895,7 +917,7 @@ class ReportController extends Controller
                     'sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result')
                     ->where('sales_solution_design.nik', $nik)
                     ->where('result', '')
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->where('id_company','2')
                     ->get();
             }
@@ -907,7 +929,7 @@ class ReportController extends Controller
                 ->select('sales_lead_register.lead_id','tb_contact.brand_name', 'sales_lead_register.opp_name',
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result')
                 ->where('sales_lead_register.status_sho','')
-                ->where('year','2019')
+                ->where('year',$year)
                 ->where('id_company','2')
                 ->get();
         } else {
@@ -917,7 +939,7 @@ class ReportController extends Controller
                 ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.brand_name',
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                 ->where('result', '')
-                ->where('year','2019')
+                ->where('year',$year)
                 ->where('id_company','2')
                 ->get();
         }
@@ -930,7 +952,7 @@ class ReportController extends Controller
                     ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.brand_name',
                     'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                     ->where('result', 'SD')
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->where('id_company','2')
                     ->get();
             } else {
@@ -941,7 +963,7 @@ class ReportController extends Controller
                     'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                     ->where('result', 'SD')
                     ->where('sales_lead_register.nik', $nik)
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->where('id_company','2')
                     ->get();
             }
@@ -954,7 +976,7 @@ class ReportController extends Controller
                     ->select('sales_lead_register.lead_id','tb_contact.brand_name', 'sales_lead_register.opp_name',
                     'sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result')
                     ->where('result', 'SD')
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->where('id_company','2')
                     ->get();
             } else {
@@ -966,7 +988,7 @@ class ReportController extends Controller
                     'sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result')
                     ->where('sales_solution_design.nik', $nik)
                     ->where('result', 'SD')
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->where('id_company','2')
                     ->get();
             }
@@ -978,7 +1000,7 @@ class ReportController extends Controller
                 ->select('sales_lead_register.lead_id','tb_contact.brand_name', 'sales_lead_register.opp_name',
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result')
                 ->where('sales_lead_register.status_sho','SD')
-                ->where('year','2019')
+                ->where('year',$year)
                 ->where('id_company','2')
                 ->get();
         } else {
@@ -988,7 +1010,7 @@ class ReportController extends Controller
                 ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.brand_name',
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                 ->where('result', 'SD')
-                ->where('year','2019')
+                ->where('year',$year)
                 ->where('id_company','2')
                 ->get();
         }
@@ -1001,7 +1023,7 @@ class ReportController extends Controller
                     ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.brand_name',
                     'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                     ->where('result', 'TP')
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->where('id_company','2')
                     ->get();
             } else {
@@ -1012,7 +1034,7 @@ class ReportController extends Controller
                     'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                     ->where('result', 'TP')
                     ->where('sales_lead_register.nik', $nik)
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->where('id_company','2')
                     ->get();
             }
@@ -1025,7 +1047,7 @@ class ReportController extends Controller
                     ->select('sales_lead_register.lead_id','tb_contact.brand_name', 'sales_lead_register.opp_name',
                     'sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result')
                     ->where('result', 'TP')
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->where('id_company','2')
                     ->get();
             } else {
@@ -1037,7 +1059,7 @@ class ReportController extends Controller
                     'sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result')
                     ->where('sales_solution_design.nik', $nik)
                     ->where('result', 'TP')
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->where('id_company','2')
                     ->get();
             }
@@ -1049,7 +1071,7 @@ class ReportController extends Controller
                 ->select('sales_lead_register.lead_id','tb_contact.brand_name', 'sales_lead_register.opp_name',
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result')
                 ->where('sales_lead_register.status_sho','TP')
-                ->where('year','2019')
+                ->where('year',$year)
                 ->where('id_company','2')
                 ->get();
         } else {
@@ -1059,7 +1081,7 @@ class ReportController extends Controller
                 ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.brand_name',
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                 ->where('result', 'TP')
-                ->where('year','2019')
+                ->where('year',$year)
                 ->where('id_company','2')
                 ->get();
         }
@@ -1069,7 +1091,7 @@ class ReportController extends Controller
                 $total_ter_open = DB::table("sales_lead_register")
                         ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
                         ->where('result', '')
-                        ->where('year','2019')
+                        ->where('year',$year)
                         ->where('id_company','2')
                         ->sum('amount');
             } else {
@@ -1077,7 +1099,7 @@ class ReportController extends Controller
                         ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
                         ->where('sales_lead_register.nik', $nik)
                         ->where('result', '')
-                        ->where('year','2019')
+                        ->where('year',$year)
                         ->where('id_company','2')
                         ->sum('amount');
             }
@@ -1087,7 +1109,7 @@ class ReportController extends Controller
                         ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
                         ->join('sales_solution_design', 'sales_solution_design.lead_id', '=', 'sales_lead_register.lead_id')
                         ->where('result', '')
-                        ->where('year','2019')
+                        ->where('year',$year)
                         ->where('id_company','2')
                         ->sum('amount');
             } else {
@@ -1096,7 +1118,7 @@ class ReportController extends Controller
                         ->join('sales_solution_design', 'sales_solution_design.lead_id', '=', 'sales_lead_register.lead_id')
                         ->where('sales_solution_design.nik', $nik)
                         ->where('result', '')
-                        ->where('year','2019')
+                        ->where('year',$year)
                         ->where('id_company','2')
                         ->sum('amount');
             }
@@ -1106,7 +1128,7 @@ class ReportController extends Controller
                     ->join('tb_contact', 'sales_lead_register.id_customer', '=', 'tb_contact.id_customer')
                     ->join('tb_id_project', 'tb_id_project.lead_id', '=', 'sales_lead_register.lead_id')
                     ->where('sales_lead_register.lead_id','tb_id_project.lead_id')
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->where('id_company','2')
                     ->sum('amount');
         }else{
@@ -1114,7 +1136,7 @@ class ReportController extends Controller
                         ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
                         ->where('id_company','2')
                         ->where('result', '')
-                        ->where('year','2019')
+                        ->where('year',$year)
                         ->sum('amount');
         }
 
@@ -1123,7 +1145,7 @@ class ReportController extends Controller
                 $total_ter_sd = DB::table("sales_lead_register")
                         ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
                         ->where('result', 'sd')
-                        ->where('year','2019')
+                        ->where('year',$year)
                         ->where('id_company','2')
                         ->sum('amount');
             } else {
@@ -1131,7 +1153,7 @@ class ReportController extends Controller
                         ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
                         ->where('sales_lead_register.nik', $nik)
                         ->where('result', 'sd')
-                        ->where('year','2019')
+                        ->where('year',$year)
                         ->where('id_company','2')
                         ->sum('amount');
             }
@@ -1141,7 +1163,7 @@ class ReportController extends Controller
                         ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
                         ->join('sales_solution_design', 'sales_solution_design.lead_id', '=', 'sales_lead_register.lead_id')
                         ->where('result', 'sd')
-                        ->where('year','2019')
+                        ->where('year',$year)
                         ->where('id_company','2')
                         ->sum('amount');
             } else {
@@ -1150,7 +1172,7 @@ class ReportController extends Controller
                         ->join('sales_solution_design', 'sales_solution_design.lead_id', '=', 'sales_lead_register.lead_id')
                         ->where('sales_solution_design.nik', $nik)
                         ->where('result', 'sd')
-                        ->where('year','2019')
+                        ->where('year',$year)
                         ->where('id_company','2')
                         ->sum('amount');
             }
@@ -1160,14 +1182,14 @@ class ReportController extends Controller
                     ->join('tb_contact', 'sales_lead_register.id_customer', '=', 'tb_contact.id_customer')
                     ->join('tb_id_project', 'tb_id_project.lead_id', '=', 'sales_lead_register.lead_id')
                     ->where('sales_lead_register.lead_id','tb_id_project.lead_id')
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->where('id_company','2')
                     ->sum('amount');
         }else{
             $total_ter_sd = DB::table("sales_lead_register")
                         ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
                         ->where('result', 'sd')
-                        ->where('year','2019')
+                        ->where('year',$year)
                         ->where('id_company','2')
                         ->sum('amount');
         }
@@ -1177,7 +1199,7 @@ class ReportController extends Controller
                 $total_ter_tp = DB::table("sales_lead_register")
                         ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
                         ->where('result', 'tp')
-                        ->where('year','2019')
+                        ->where('year',$year)
                         ->where('id_company','2')
                         ->sum('amount');
             } else {
@@ -1185,7 +1207,7 @@ class ReportController extends Controller
                         ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
                         ->where('sales_lead_register.nik', $nik)
                         ->where('result', 'tp')
-                        ->where('year','2019')
+                        ->where('year',$year)
                         ->where('id_company','2')
                         ->sum('amount');
             }
@@ -1195,7 +1217,7 @@ class ReportController extends Controller
                         ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
                         ->join('sales_solution_design', 'sales_solution_design.lead_id', '=', 'sales_lead_register.lead_id')
                         ->where('result', 'tp')
-                        ->where('year','2019')
+                        ->where('year',$year)
                         ->where('id_company','2')
                         ->sum('amount');
             } else {
@@ -1204,7 +1226,7 @@ class ReportController extends Controller
                         ->join('sales_solution_design', 'sales_solution_design.lead_id', '=', 'sales_lead_register.lead_id')
                         ->where('sales_solution_design.nik', $nik)
                         ->where('result', 'tp')
-                        ->where('year','2019')
+                        ->where('year',$year)
                         ->where('id_company','2')
                         ->sum('amount');
             }
@@ -1214,14 +1236,14 @@ class ReportController extends Controller
                     ->join('tb_contact', 'sales_lead_register.id_customer', '=', 'tb_contact.id_customer')
                     ->join('tb_id_project', 'tb_id_project.lead_id', '=', 'sales_lead_register.lead_id')
                     ->where('sales_lead_register.lead_id','tb_id_project.lead_id')
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->where('id_company','2')
                     ->sum('amount');
         }else{
             $total_ter_tp = DB::table("sales_lead_register")
                         ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
                         ->where('result', 'tp')
-                        ->where('year','2019')
+                        ->where('year',$year)
                         ->where('id_company','2')
                         ->sum('amount');
         }
@@ -1381,6 +1403,8 @@ class ReportController extends Controller
         $position = DB::table('users')->select('id_position')->where('nik', $nik)->first();
         $pos = $position->id_position;
 
+        $year = date("Y");
+
         if($div == 'SALES'){
             if($pos == 'MANAGER') {
                 $win = DB::table('sales_lead_register')
@@ -1389,7 +1413,7 @@ class ReportController extends Controller
                     ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.brand_name',
                     'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                     ->where('result', 'win')
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->where('id_company','2')
                     ->get();
             } else {
@@ -1400,7 +1424,7 @@ class ReportController extends Controller
                     'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                     ->where('result', 'win')
                     ->where('sales_lead_register.nik', $nik)
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->where('id_company','2')
                     ->get();
             }
@@ -1413,7 +1437,7 @@ class ReportController extends Controller
                     ->select('sales_lead_register.lead_id','tb_contact.brand_name', 'sales_lead_register.opp_name',
                     'sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result')
                     ->where('result', 'WIN')
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->where('id_company','2')
                     ->get();
             } else {
@@ -1425,7 +1449,7 @@ class ReportController extends Controller
                     'sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result')
                     ->where('sales_solution_design.nik', $nik)
                     ->where('result', 'WIN')
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->where('id_company','2')
                     ->get();
             }
@@ -1443,7 +1467,7 @@ class ReportController extends Controller
                 ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.brand_name',
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                 ->where('result', 'win')
-                ->where('year','2019')
+                ->where('year',$year)
                 ->where('id_company','2')
                 ->get();
         }
@@ -1453,7 +1477,7 @@ class ReportController extends Controller
                 $total_ter = DB::table("sales_lead_register")
                         ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
                         ->where('result', 'win')
-                        ->where('year','2019')
+                        ->where('year',$year)
                         ->where('id_company','2')
                         ->sum('amount');
             } else {
@@ -1461,7 +1485,7 @@ class ReportController extends Controller
                         ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
                         ->where('sales_lead_register.nik', $nik)
                         ->where('result', 'win')
-                        ->where('year','2019')
+                        ->where('year',$year)
                         ->where('id_company','2')
                         ->sum('amount');
             }
@@ -1471,7 +1495,7 @@ class ReportController extends Controller
                         ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
                         ->join('sales_solution_design', 'sales_solution_design.lead_id', '=', 'sales_lead_register.lead_id')
                         ->where('result', 'win')
-                        ->where('year','2019')
+                        ->where('year',$year)
                         ->where('id_company','2')
                         ->sum('amount');
             } else {
@@ -1480,7 +1504,7 @@ class ReportController extends Controller
                         ->join('sales_solution_design', 'sales_solution_design.lead_id', '=', 'sales_lead_register.lead_id')
                         ->where('sales_solution_design.nik', $nik)
                         ->where('result', 'win')
-                        ->where('year','2019')
+                        ->where('year',$year)
                         ->where('id_company','2')
                         ->sum('amount');
             }
@@ -1488,7 +1512,7 @@ class ReportController extends Controller
             $total_ter = DB::table("sales_lead_register")
                         ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
                         ->where('result', 'win')
-                        ->where('year','2019')
+                        ->where('year',$year)
                         ->where('id_company','2')
                         ->sum('amount');
         }
@@ -1648,6 +1672,8 @@ class ReportController extends Controller
         $position = DB::table('users')->select('id_position')->where('nik', $nik)->first();
         $pos = $position->id_position;
 
+        $year = date("Y");
+
         if ($div == 'SALES') {
             if($pos == 'MANAGER') {
                 $lose = DB::table('sales_lead_register')
@@ -1656,7 +1682,7 @@ class ReportController extends Controller
                     ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.brand_name',
                     'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                     ->where('result', 'lose')
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->where('id_company','2')
                     ->get();
             } else {
@@ -1667,7 +1693,7 @@ class ReportController extends Controller
                     'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                     ->where('result', 'lose')
                     ->where('sales_lead_register.nik', $nik)
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->where('id_company','2')
                     ->get();
             }
@@ -1680,7 +1706,7 @@ class ReportController extends Controller
                     ->select('sales_lead_register.lead_id','tb_contact.brand_name', 'sales_lead_register.opp_name',
                     'sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result')
                     ->where('result', 'LOSE')
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->where('id_company','2')
                     ->get();
             } else {
@@ -1692,7 +1718,7 @@ class ReportController extends Controller
                     'sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result')
                     ->where('sales_solution_design.nik', $nik)
                     ->where('result', 'LOSE')
-                    ->where('year','2019')
+                    ->where('year',$year)
                     ->where('id_company','2')
                     ->get();
             }
@@ -1710,7 +1736,7 @@ class ReportController extends Controller
                 ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.brand_name',
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                 ->where('result', 'lose')
-                ->where('year','2019')
+                ->where('year',$year)
                 ->where('id_company','2')
                 ->get();
         }
@@ -1720,7 +1746,7 @@ class ReportController extends Controller
                 $total_ter = DB::table("sales_lead_register")
                         ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
                         ->where('result', 'lose')
-                        ->where('year','2019')
+                        ->where('year',$year)
                         ->where('id_company','2')
                         ->sum('amount');
             } else {
@@ -1728,7 +1754,7 @@ class ReportController extends Controller
                         ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
                         ->where('sales_lead_register.nik', $nik)
                         ->where('result', 'lose')
-                        ->where('year','2019')
+                        ->where('year',$year)
                         ->where('id_company','2')
                         ->sum('amount');
             }
@@ -1738,7 +1764,7 @@ class ReportController extends Controller
                         ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
                         ->join('sales_solution_design', 'sales_solution_design.lead_id', '=', 'sales_lead_register.lead_id')
                         ->where('result', 'lose')
-                        ->where('year','2019')
+                        ->where('year',$year)
                         ->where('id_company','2')
                         ->sum('amount');
             } else {
@@ -1747,7 +1773,7 @@ class ReportController extends Controller
                         ->join('sales_solution_design', 'sales_solution_design.lead_id', '=', 'sales_lead_register.lead_id')
                         ->where('sales_solution_design.nik', $nik)
                         ->where('result', 'lose')
-                        ->where('year','2019')
+                        ->where('year',$year)
                         ->where('id_company','2')
                         ->sum('amount');
             }
@@ -1755,7 +1781,7 @@ class ReportController extends Controller
             $total_ter = DB::table("sales_lead_register")
                         ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
                         ->where('result', 'lose')
-                        ->where('year','2019')
+                        ->where('year',$year)
                         ->where('id_company','2')
                         ->sum('amount');
         }
@@ -1915,6 +1941,7 @@ class ReportController extends Controller
         $position = DB::table('users')->select('id_position')->where('nik', $nik)->first();
         $pos = $position->id_position;
 
+        $year = date("Y");
         
         if($ter != null){
             $lead = DB::table('sales_lead_register')
@@ -1923,7 +1950,7 @@ class ReportController extends Controller
                 ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.brand_name',
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                 ->where('id_territory', $ter)
-                ->where('year','2019')
+                ->where('year',$year)
                 ->get();
         } elseif($div == 'TECHNICAL PRESALES' && $pos == 'STAFF') {
             $lead = DB::table('sales_lead_register')
@@ -1933,7 +1960,7 @@ class ReportController extends Controller
                 ->select('sales_lead_register.lead_id','tb_contact.brand_name', 'sales_lead_register.opp_name',
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result')
                 ->where('sales_solution_design.nik', $nik)
-                ->where('year','2019')
+                ->where('year',$year)
                 ->get();
         }elseif($div == 'PMO') {
             $lead = DB::table('sales_lead_register')
@@ -1942,7 +1969,7 @@ class ReportController extends Controller
                 ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.brand_name',
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                 ->where('sales_lead_register.result','WIN')
-                ->where('year','2019')
+                ->where('year',$year)
                 ->get();
         } else {
             $lead = DB::table('sales_lead_register')
@@ -1950,7 +1977,7 @@ class ReportController extends Controller
                 ->join('tb_contact', 'sales_lead_register.id_customer', '=', 'tb_contact.id_customer')
                 ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.brand_name',
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
-                ->where('year','2019')
+                ->where('year',$year)
                 ->get();
         }
 
@@ -1968,6 +1995,8 @@ class ReportController extends Controller
         $position = DB::table('users')->select('id_position')->where('nik', $nik)->first();
         $pos = $position->id_position;
 
+        $year = date("Y");
+
         if($ter != null){
             $open = DB::table('sales_lead_register')
                 ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
@@ -1976,7 +2005,7 @@ class ReportController extends Controller
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                 ->where('result', '')
                 ->where('id_territory', $ter)
-                ->where('year','2019')
+                ->where('year',$year)
                 ->get();
         } elseif($div == 'TECHNICAL PRESALES' && $pos == 'STAFF') {
             $open = DB::table('sales_lead_register')
@@ -1987,7 +2016,7 @@ class ReportController extends Controller
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result')
                 ->where('sales_solution_design.nik', $nik)
                 ->where('result', '')
-                ->where('year','2019')
+                ->where('year',$year)
                 ->get();
         } else {
             $open = DB::table('sales_lead_register')
@@ -1996,7 +2025,7 @@ class ReportController extends Controller
                 ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.brand_name',
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                 ->where('result', '')
-                ->where('year','2019')
+                ->where('year',$year)
                 ->get();
         }
 
@@ -2008,7 +2037,7 @@ class ReportController extends Controller
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                 ->where('result', 'sd')
                 ->where('id_territory', $ter)
-                ->where('year','2019')
+                ->where('year',$year)
                 ->get();
         } elseif($div == 'TECHNICAL PRESALES' && $pos == 'STAFF') {
             $sd = DB::table('sales_lead_register')
@@ -2019,7 +2048,7 @@ class ReportController extends Controller
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result')
                 ->where('sales_solution_design.nik', $nik)
                 ->where('result', 'sd')
-                ->where('year','2019')
+                ->where('year',$year)
                 ->get();
         } else {
             $sd = DB::table('sales_lead_register')
@@ -2028,7 +2057,7 @@ class ReportController extends Controller
                 ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.brand_name',
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                 ->where('result', 'sd')
-                ->where('year','2019')
+                ->where('year',$year)
                 ->get();
         }
 
@@ -2040,7 +2069,7 @@ class ReportController extends Controller
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                 ->where('result', 'tp')
                 ->where('id_territory', $ter)
-                ->where('year','2019')
+                ->where('year',$year)
                 ->get();
         } elseif($div == 'TECHNICAL PRESALES' && $pos == 'STAFF') {
             $tp = DB::table('sales_lead_register')
@@ -2051,7 +2080,7 @@ class ReportController extends Controller
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result')
                 ->where('sales_solution_design.nik', $nik)
                 ->where('result', 'tp')
-                ->where('year','2019')
+                ->where('year',$year)
                 ->get();
         } else {
             $tp = DB::table('sales_lead_register')
@@ -2060,7 +2089,7 @@ class ReportController extends Controller
                 ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.brand_name',
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                 ->where('result', 'tp')
-                ->where('year','2019')
+                ->where('year',$year)
                 ->get();
         }
 
@@ -2078,6 +2107,8 @@ class ReportController extends Controller
         $position = DB::table('users')->select('id_position')->where('nik', $nik)->first();
         $pos = $position->id_position;
 
+        $year = date("Y");
+
         if($ter != null){
             $win = DB::table('sales_lead_register')
                 ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
@@ -2086,7 +2117,7 @@ class ReportController extends Controller
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                 ->where('result', 'win')
                 ->where('id_territory', $ter)
-                ->where('year','2019')
+                ->where('year',$year)
                 ->get();
         } elseif($div == 'TECHNICAL PRESALES' && $pos == 'STAFF') {
             $win = DB::table('sales_lead_register')
@@ -2097,7 +2128,7 @@ class ReportController extends Controller
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result')
                 ->where('sales_solution_design.nik', $nik)
                 ->where('result', 'WIN')
-                ->where('year','2019')
+                ->where('year',$year)
                 ->get();
         } elseif($div == 'PMO' && $pos == 'MANAGER') {
             $win = DB::table('sales_lead_register')
@@ -2106,7 +2137,7 @@ class ReportController extends Controller
                 ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.brand_name',
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                 ->where('result', 'win')
-                ->where('year','2019')
+                ->where('year',$year)
                 ->get();
         } elseif($div == 'PMO' && $pos == 'STAFF') {
             $win = DB::table('sales_lead_register')
@@ -2117,7 +2148,7 @@ class ReportController extends Controller
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                 ->where('result', 'win')
                 ->where('tb_pmo.pmo_nik',$nik)
-                ->where('year','2019')
+                ->where('year',$year)
                 ->get();
         } else {
             $win = DB::table('sales_lead_register')
@@ -2126,7 +2157,7 @@ class ReportController extends Controller
                 ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.brand_name',
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                 ->where('result', 'win')
-                ->where('year','2019')
+                ->where('year',$year)
                 ->get();
         }
         $pdf = PDF::loadView('report.win_pdf', compact('win'));
@@ -2143,6 +2174,8 @@ class ReportController extends Controller
         $position = DB::table('users')->select('id_position')->where('nik', $nik)->first();
         $pos = $position->id_position;
 
+        $year = date("Y");
+
         if($ter != null){
             $lose = DB::table('sales_lead_register')
                 ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
@@ -2151,7 +2184,7 @@ class ReportController extends Controller
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                 ->where('result', 'lose')
                 ->where('id_territory', $ter)
-                ->where('year','2019')
+                ->where('year',$year)
                 ->get();
         } elseif($div == 'TECHNICAL PRESALES' && $pos == 'STAFF') {
             $lose = DB::table('sales_lead_register')
@@ -2162,7 +2195,7 @@ class ReportController extends Controller
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result')
                 ->where('sales_solution_design.nik', $nik)
                 ->where('result', 'LOSE')
-                ->where('year','2019')
+                ->where('year',$year)
                 ->get();
         } else {
             $lose = DB::table('sales_lead_register')
@@ -2171,7 +2204,7 @@ class ReportController extends Controller
                 ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.brand_name',
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                 ->where('result', 'lose')
-                ->where('year','2019')
+                ->where('year',$year)
                 ->get();
         }
         $pdf = PDF::loadView('report.lose_pdf', compact('lose'));
@@ -2195,7 +2228,7 @@ class ReportController extends Controller
                 ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.brand_name',
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
                 ->where('id_territory', $ter)
-                ->where('year','2019')
+                ->where('year',$year)
                 ->get();
         } elseif($div == 'TECHNICAL PRESALES' && $pos == 'STAFF') {
             $lead = DB::table('sales_lead_register')
@@ -2205,7 +2238,7 @@ class ReportController extends Controller
                 ->select('sales_lead_register.lead_id','tb_contact.brand_name', 'sales_lead_register.opp_name',
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'users.name', 'sales_lead_register.result')
                 ->where('sales_solution_design.nik', $nik)
-                ->where('year','2019')
+                ->where('year',$year)
                 ->get();
         } else {
             $lead = DB::table('sales_lead_register')
@@ -2213,7 +2246,7 @@ class ReportController extends Controller
                 ->join('tb_contact', 'sales_lead_register.id_customer', '=', 'tb_contact.id_customer')
                 ->select('sales_lead_register.lead_id', 'tb_contact.id_customer', 'tb_contact.code', 'sales_lead_register.opp_name','tb_contact.brand_name',
                 'sales_lead_register.created_at', 'sales_lead_register.amount', 'sales_lead_register.result', 'users.name')
-                ->where('year','2019')
+                ->where('year',$year)
                 ->get();
         }
 
