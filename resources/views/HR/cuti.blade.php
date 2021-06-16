@@ -102,12 +102,12 @@
                 @endif
               @else
                 <button type="button" class="btn btn-sm btn-primary pull-right disabled disabled-permission" style="margin-left: 10px"><i class="fa fa-plus"> </i> &nbspPermission</button>
-            @endif
-          @else
-            <button type="button" class="btn btn-sm bg-navy pull-right disabled disabled-permission" style="margin-left: 10px;width: 100px">
+              @endif
+            @else
+              <button type="button" class="btn btn-sm bg-navy pull-right disabled disabled-permission" style="margin-left: 10px;width: 100px">
                 <i class="fa fa-plus" style="margin-right: 5px"> </i> Permission
               </button>
-          @endif
+            @endif
           </div>
       </div>
 
@@ -115,6 +115,11 @@
         <div class="nav-tabs-custom">
 
               <ul class="nav nav-tabs" id="cutis">
+                  @if(Auth::User()->id_position == 'DIRECTOR' || Auth::User()->id_position == 'MANAGER' && Auth::User()->id_division == 'TECHNICAL')
+                    <li>
+                      <a href="#list_cuti" data-toggle="tab">List Cuti Karyawan</a>
+                    </li>
+                  @endif
                   <li class="active">
                     <a href="#request_cuti" data-toggle="tab">Request Cuti {{$bulan}}</a>
                   </li>
@@ -124,6 +129,29 @@
               </ul>
 
               <div class="tab-content">
+
+                <div class="tab-pane" id="list_cuti"> 
+                  <table class="table table-bordered table-striped dataTable" id="datatable_list_cuti" width="100%" cellspacing="0">
+                    <thead>
+                      <tr>
+                        <th rowspan="2"><center>Employees Name</center></th>
+                        <th rowspan="2"><center>Email</center></th>
+                        <th rowspan="2"><center>Division</center></th>
+                        <th rowspan="2"><center>Tanggal Masuk Kerja</center></th>
+                        <th rowspan="2"><center>Lama Bekerja</center></th>
+                        <th rowspan="2"><center>Cuti sudah diambil</center></th>
+                        <th colspan="2"><center>Sisa Cuti</center></th>
+                      </tr>
+                        <tr>
+                          <th>{{$tahun_lalu}}</th>
+                          <th>{{$tahun_ini}}</th>
+                        </tr>
+                    </thead>
+                    <tbody id="all_cuti" name="all_cuti">
+                    </tbody>
+                  </table>
+                </div>
+
                 <div class="tab-pane active" id="request_cuti"> 
 
                   <div class="table-responsive">
@@ -532,6 +560,101 @@
     
     $('#datatables').DataTable()
     $('#datatablew').DataTable()
+
+    get_list_cuti();
+
+    function get_list_cuti(){
+      $("#datatable_list_cuti").DataTable({
+        "ajax":{
+          "type":"GET",
+          "url":"{{url('get_list_cuti')}}",
+        },
+        "columns": [
+          { 
+            render: function ( data, type, row ) {
+              return row.name.toUpperCase()
+            } 
+          },
+          { "data": "email" },
+          { 
+            render: function ( data, type, row ) {
+              if (row.id_division == '-') {
+                  return 'Admin';
+              }else{
+                  return row.id_division;  
+              }
+            } 
+          },
+          { 
+            render: function (data, type, row) {
+              return moment(row.date_of_entry).format('L');
+            } 
+          },
+          {
+
+            render: function (data, type, row) {
+              if(row.date_of_entrys > 365){
+                return Math.floor(row.date_of_entrys / 365) + ' Tahun ' + Math.floor(row.date_of_entrys % 365 / 30) + ' Bulan';
+              }else if(row.date_of_entrys > 31){
+                return Math.floor(row.date_of_entrys / 30) + ' Bulan';
+              }else{
+                return row.date_of_entrys + ' Hari';
+              }
+            }
+          },
+          {
+            render: function (data, type, row) {
+              if(row.niks < 1){
+                return '1 Hari';
+              }else if(row.niks == undefined){
+                return '-'
+              }else{
+                return row.niks + ' Hari';
+              }
+            } 
+          },
+          {
+            render: function (data, type, row) {
+              if(row.cuti == null){
+                return '-';
+              }else{
+                return row.cuti + ' Hari';
+              }
+            } 
+          },
+          {
+            render: function (data, type, row) {
+              if(row.status_karyawan == 'belum_cuti'){
+                return '-';
+              }else{
+                return row.cuti2 + ' Hari';
+              }
+            } 
+          },
+          {
+            'data':'date_of_entrys',
+            'visible': false,
+            'searchable': false,
+          }
+        ],
+        "searching": true,
+        "lengthChange": true,
+        "order": [[ 0, "asc" ]],
+        "fixedColumns":   {
+          leftColumns: 1
+        },
+        'columnDefs': [
+            { 'orderData':[8], 'targets': [3] },
+            { 'orderData':[8], 'targets': [4] },
+            {
+                'targets': [8],
+                'visible': false,
+                'searchable': false
+            },
+        ],
+        "pageLength": 10,
+      })
+    }
 
     $(".show-sisa-cuti").click(function(){
       $.ajax({
