@@ -710,6 +710,8 @@ class HRGAController extends Controller
         }else{
             if ($div == 'TECHNICAL' || $div == 'TECHNICAL PRESALES') {
                 $nik_kirim = DB::table('users')->select('users.email')->where('email','sinung@solusindoperkasa.co.id')->where('id_company','2')->first();
+            }else if($pos == 'ADMIN PM'){
+                $nik_kirim = DB::table('users')->select('users.email')->where('email','fuad@solusindoperkasa.co.id')->where('id_company','2')->first();
             }else{
                  $nik_kirim = DB::table('users')->select('users.email')->where('email','ferry@solusindoperkasa.co.id')->where('id_company','2')->first();
             }
@@ -739,7 +741,9 @@ class HRGAController extends Controller
             
             if($div == 'TECHNICAL' || $div == 'TECHNICAL PRESALES'){
                 Mail::to($nik_kirim)->cc(['yudhi@sinergy.co.id','ferry@solusindoperkasa.co.id'])->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Permohonan Cuti'));         
-            } else {
+            } else if($pos == 'ADMIN PM'){
+                Mail::to($nik_kirim)->cc('yudhi@sinergy.co.id')->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Permohonan Cuti'));
+            }else {
                 Mail::to($nik_kirim)->cc('yudhi@sinergy.co.id')->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Permohonan Cuti'));            
             }
         }
@@ -1114,7 +1118,7 @@ class HRGAController extends Controller
                 $query->select('id_cuti')
                     ->from('tb_cuti')
                     ->where('nik','=',Auth::user()->nik)
-                    ->where('status', '<>', 'd');
+                    ->where('tb_cuti.status', '<>', 'd');
             })
             ->pluck('date_off');
 
@@ -1184,6 +1188,8 @@ class HRGAController extends Controller
         }else{
             if ($div == 'TECHNICAL' || $div == 'TECHNICAL PRESALES') {
                 $nik_kirim = DB::table('users')->select('users.email')->where('email','sinung@solusindoperkasa.co.id')->where('id_company','2')->first();
+            } else if($pos == 'ADMIN PM'){
+                $nik_kirim = DB::table('users')->select('users.email')->where('email','fuad@solusindoperkasa.co.id')->where('id_company','2')->first();
             }else{
                  $nik_kirim = DB::table('users')->select('users.email')->where('email','ferry@solusindoperkasa.co.id')->where('id_company','2')->first();
             }
@@ -1210,6 +1216,8 @@ class HRGAController extends Controller
 
             if($div == 'TECHNICAL' || $div == 'TECHNICAL PRESALES'){
                 Mail::to($nik_kirim)->cc('ferry@solusindoperkasa.co.id')->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Permohonan Cuti'));         
+            } else if($pos == 'ADMIN PM'){
+                Mail::to($nik_kirim)->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Permohonan Cuti'));
             } else {
                 Mail::to($nik_kirim)->send(new CutiKaryawan($name_cuti,$hari,$ardetil,$ardetil_after,'[MSP-App] Permohonan Cuti'));            
             }
