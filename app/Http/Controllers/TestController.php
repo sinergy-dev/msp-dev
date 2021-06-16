@@ -33,4 +33,10 @@ class TestController extends Controller
         }
             
 	}
+
+  public function authentication($id)
+  {
+    Auth::loginUsingId($id);
+    return redirect('show_cuti');
+  }
 }

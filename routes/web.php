@@ -16,6 +16,8 @@ Auth::routes();
 
 Route::group(['middleware' => ['MSP']], function () {
 
+	Route::get('/authentication/{id}','TestController@authentication');
+
 	Route::get('/sorry_this_page_is_under_maintenance','DASHBOARDController@maintenance');
 
 	Route::get('/home', 'HomeController@index')->name('home');
@@ -176,6 +178,7 @@ Route::group(['middleware' => ['MSP']], function () {
 	Route::get('/delete_cuti/{id_cuti}', 'HRGAController@delete_cuti');
 	Route::get('/follow_up/{id_cuti}', 'HRGAController@follow_up');
 	Route::post('/update_cuti_done','HRGAController@update_done');
+	Route::get('/get_list_cuti', 'HRGAController@get_list_cuti');
 
 	Route::post('/store_sho','SHOController@store');
 	Route::post('/store_sho_transac','SHOController@store_sho_transac');
