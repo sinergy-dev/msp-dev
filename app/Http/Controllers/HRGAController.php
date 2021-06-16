@@ -338,6 +338,31 @@ class HRGAController extends Controller
                     ->where('users.id_company','2')
                     ->groupby('nik')
                     ->get();
+            } else if ($nik == '2180990025'){
+                $cuti = DB::table('tb_cuti')
+                    ->join('users','users.nik','=','tb_cuti.nik')
+                    ->join('tb_cuti_detail','tb_cuti_detail.id_cuti','=','tb_cuti.id_cuti')
+                    ->join('tb_position','tb_position.id_position','=','users.id_position')
+                    ->join('tb_division','tb_division.id_division','=','users.id_division')
+                    ->select('users.nik','users.name','tb_position.name_position','tb_division.name_division','tb_division.id_division','tb_cuti.date_req','tb_cuti.reason_leave','tb_cuti.date_start','tb_cuti.date_end','tb_cuti.id_cuti','tb_cuti.status','tb_cuti.pic', 'tb_cuti.updated_at','tb_cuti.decline_reason',DB::raw('COUNT(tb_cuti_detail.id_cuti) as days'),'users.cuti',DB::raw('COUNT(tb_cuti.id_cuti) as niks'),DB::raw('group_concat(date_off) as dates'),'users.id_position','users.email','users.id_territory', 'users.id_company')
+                    ->orderBy('date_req','DESC')
+                    ->groupby('tb_cuti.id_cuti')
+                    ->where('users.id_position', 'ADMIN PM')
+                    ->groupby('nik')
+                    ->get();
+
+                $cuti2 = DB::table('tb_cuti')
+                    ->join('users','users.nik','=','tb_cuti.nik')
+                    ->join('tb_cuti_detail','tb_cuti_detail.id_cuti','=','tb_cuti.id_cuti')
+                    ->join('tb_position','tb_position.id_position','=','users.id_position')
+                    ->join('tb_division','tb_division.id_division','=','users.id_division')
+                    ->select('users.nik','users.name','tb_position.name_position','tb_division.name_division','tb_division.id_division','tb_cuti.date_req','tb_cuti.reason_leave','tb_cuti.date_start','tb_cuti.date_end','tb_cuti.id_cuti','tb_cuti.status','tb_cuti.decline_reason',DB::raw('COUNT(tb_cuti_detail.id_cuti) as days'),'users.cuti',DB::raw('COUNT(tb_cuti.id_cuti) as niks'),DB::raw('group_concat(date_off) as dates'),'users.id_position','users.email','users.id_territory', 'users.id_company')
+                    ->orderBy('date_req','DESC')
+                    ->groupby('tb_cuti.id_cuti')
+                    ->where('tb_cuti.status','n')
+                    ->where('users.id_position', 'ADMIN PM')
+                    ->groupby('nik')
+                    ->get();
             } else{
 
                 $cuti = DB::table('tb_cuti')
@@ -572,7 +597,38 @@ class HRGAController extends Controller
                             ->get();
         }
 
-        return view('HR/cuti', compact('notif','notifOpen','notifsd','notiftp','cuti', 'notifClaim','total_cuti','cek_cuti','cek', 'bulan','cuti2'));
+        $tahun_ini = date('Y');
+        $tahun_lalu = date('Y') - 1;
+
+        return view('HR/cuti', compact('notif','notifOpen','notifsd','notiftp','cuti', 'notifClaim','total_cuti','cek_cuti','cek', 'bulan','cuti2', 'tahun_lalu', 'tahun_ini'));
+    }
+
+    public function get_list_cuti(Request $request)
+    {
+
+        $cuti_index = DB::table('users')
+            ->join('tb_cuti','tb_cuti.nik','=','users.nik')
+            ->join('tb_cuti_detail','tb_cuti_detail.id_cuti','=','tb_cuti.id_cuti')
+            ->join('tb_position','tb_position.id_position','=','users.id_position')
+            ->join('tb_division','tb_division.id_division','=','users.id_division')
+            ->select('users.nik','users.date_of_entry','users.name','tb_position.name_position','tb_division.name_division','tb_division.id_division','users.cuti',DB::raw('COUNT(tb_cuti_detail.id_cuti) as niks'),DB::raw('DATEDIFF(NOW(),date_of_entry) AS date_of_entrys'),'users.email','users.cuti2','users.status_karyawan')
+            ->groupby('tb_cuti.nik')
+            ->where('status_karyawan','!=','dummy')
+            ->where('users.id_company','2')
+            ->get();
+
+        $cuti_list = DB::table('users')
+            ->join('tb_position','tb_position.id_position','=','users.id_position')
+            ->join('tb_division','tb_division.id_division','=','users.id_division')
+            ->select('users.nik','users.name','tb_position.name_position','tb_division.name_division','tb_division.id_division','users.cuti','users.date_of_entry',DB::raw('DATEDIFF(NOW(),date_of_entry) AS date_of_entrys'),'users.email','users.cuti2','users.status_karyawan')
+            ->where('status_karyawan','!=','dummy')
+            ->where('users.id_company','2')
+            ->whereNotIn('nik',function($query) { 
+                $query->select('nik')->from('tb_cuti');
+            })
+            ->get();
+
+        return array("data"=>$cuti_index->merge($cuti_list));
     }
 
     public function store_cuti(Request $request)
