@@ -288,6 +288,8 @@ class HRGAController extends Controller
         $cek = User::join('tb_cuti','tb_cuti.nik','=','users.nik','left')
                 ->select('users.nik','cuti','cuti2','status_karyawan','status')->where('users.nik',$nik)->first();
 
+        $notifClaim = '';
+
         // return $cek;
 
         if ($cek->status == null) {
