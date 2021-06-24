@@ -211,12 +211,14 @@ class POAssetMSPController extends Controller
                             ->get();
         }
 
+        $notifClaim = '';
+
         $from = DB::table('users')
                 ->select('nik', 'name')
                 ->where('id_company', '2')
                 ->get();
 
-        return view('admin_msp/po_asset',compact('notif','notifOpen','notifsd','notiftp','notifClaim','pam','produks','pams','sum','id_pam','count_product','total_amount','no_pr','$total_amount','from', 'datas', 'pam2', 'project_id'));
+        return view('admin_msp/po_asset',compact('notif','notifOpen','notifsd','notiftp','notifClaim','pam','from', 'datas', 'pam2', 'project_id'));
     }
 
     public function add_po(Request $request)
