@@ -85,6 +85,8 @@ class WarehouseProjectController extends Controller
         $position = DB::table('users')->select('id_position')->where('nik', $nik)->first();
         $pos = $position->id_position; 
 
+        $notif = '';
+
         if ($ter != null) {
             $notif = DB::table('sales_lead_register')
             ->select('opp_name','nik')
@@ -273,6 +275,14 @@ class WarehouseProjectController extends Controller
         $position = DB::table('users')->select('id_position')->where('nik', $nik)->first();
         $pos = $position->id_position;
 
+        $notif = '';
+        $notifOpen = '';
+        $notifsd = '';
+        $notiftp = '';
+        $notifc = '';
+        $notifem = '';
+        $barangs = '';
+
         $idpro = SalesProject::select('id_pro')->orderBy('id_pro','asc')->first();
 
         $datas = WarehouseProjectMSP::join('tb_do_msp','tb_do_msp.no','=','inventory_delivery_msp.no_do')
@@ -410,8 +420,8 @@ class WarehouseProjectController extends Controller
 
         $type = type_in::select('id_type','type')->get();
 
-        return view('gudang/project/return_produk_msp', compact('notif','notifOpen','notifsd','notiftp','barang','notifc','notifem','category','type',
-            'do_number','datas','barangs','project_id','msp_code'));
+        return view('gudang/project/return_produk_msp', compact('barang','category','type',
+            'do_number','datas','project_id','msp_code'));
     }
 
     public function inventory_index_msp(Request $request)
@@ -423,6 +433,14 @@ class WarehouseProjectController extends Controller
         $div = $division->id_division;
         $position = DB::table('users')->select('id_position')->where('nik', $nik)->first();
         $pos = $position->id_position; 
+
+        $notif = '';
+        $notifOpen = '';
+        $notifsd = '';
+        $notiftp = '';
+        $notifc = '';
+        $notifem = '';
+        $barangs = '';
 
         if ($pos == 'PM') {
             $datas = WarehouseProjectMSP::join('tb_do_msp','tb_do_msp.no','=','inventory_delivery_msp.no_do')
@@ -541,9 +559,9 @@ class WarehouseProjectController extends Controller
         }
         $update->update();
 
-        $update_id  = Project_msp_changelog::where('id_transaction',$id_transaction)->first();
-        $update_id->id_project  = $request['id_project'];
-        $update_id->update();
+        // $update_id  = Project_msp_changelog::where('id_transaction',$id_transaction)->first();
+        // $update_id->id_project  = $request['id_project'];
+        // $update_id->update();
 
         return redirect()->back()->with('update', 'Delivery Order has been Updated!');
     }
@@ -620,6 +638,16 @@ class WarehouseProjectController extends Controller
         $div = $division->id_division;
         $position = DB::table('users')->select('id_position')->where('nik', $nik)->first();
         $pos = $position->id_position; 
+
+        $array = '';
+        $notif = '';
+        $notifOpen = '';
+        $notifsd = '';
+        $notiftp = '';
+        $notifc = '';
+        $notifem = '';
+        $ids = '';
+        $result = '';
 
       
         $datas = WarehouseProjectMSP::join('tb_do_msp','tb_do_msp.no','=','inventory_delivery_msp.no_do')
@@ -703,7 +731,16 @@ class WarehouseProjectController extends Controller
         $position = DB::table('users')->select('id_position')->where('nik', $nik)->first();
         $pos = $position->id_position; 
 
-      
+        $array = '';
+        $notif = '';
+        $notifOpen = '';
+        $notifsd = '';
+        $notiftp = '';
+        $notifc = '';
+        $notifem = '';
+        $ids = '';
+        $result = '';
+
         $datas = WarehouseProjectMSP::join('tb_do_msp','tb_do_msp.no','=','inventory_delivery_msp.no_do')
                 ->select('inventory_delivery_msp.to_agen','inventory_delivery_msp.from','inventory_delivery_msp.address','inventory_delivery_msp.id_transaction','inventory_delivery_msp.telp','inventory_delivery_msp.fax','inventory_delivery_msp.attn','inventory_delivery_msp.subj','inventory_delivery_msp.date','inventory_delivery_msp.id_transaction','tb_do_msp.no_do','inventory_delivery_msp.id_transaction','inventory_delivery_msp.status_kirim')
                 ->get();
