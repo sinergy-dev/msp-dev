@@ -8,6 +8,13 @@ use DB;
 use Auth;
 use Excel;
 
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
 class PONumberMSPController extends Controller
 {
     public function __construct()
@@ -24,6 +31,8 @@ class PONumberMSPController extends Controller
         $div = $division->id_division;
         $position = DB::table('users')->select('id_position')->where('nik', $nik)->first();
         $pos = $position->id_position; 
+
+        $notifClaim = '';
 
         if ($ter != null) {
             $notif = DB::table('sales_lead_register')
@@ -175,7 +184,7 @@ class PONumberMSPController extends Controller
                     ->where('tb_po_msp.updated_at', '>=', '2019-07-23')
                     ->get();
 
-        return view('admin_msp/po', compact('lead', 'total_ter','notif','notifOpen','notifsd','notiftp','id_pro', 'datas','notifClaim'));
+        return view('admin_msp/po', compact('notif','notifOpen','notifsd','notiftp', 'datas','notifClaim'));
     }
 
     /**
@@ -330,67 +339,68 @@ class PONumberMSPController extends Controller
 
     public function downloadExcelPO(Request $request)
     {
-        $nama = 'Rekap Purchase Order '.date('Y');
-        Excel::create($nama, function ($excel) use ($request) {
-        $excel->sheet('Rekap Purchase Order', function ($sheet) use ($request) {
-        
-        $sheet->mergeCells('A1:O1');
+        $spreadsheet = new Spreadsheet();
 
-       // $sheet->setAllBorders('thin');
-        $sheet->row(1, function ($row) {
-            $row->setFontFamily('Calibri');
-            $row->setFontSize(11);
-            $row->setAlignment('center');
-            $row->setFontWeight('bold');
-        });
+        $prSheet = new Worksheet($spreadsheet,'Rekap Purchase Order');
+        $spreadsheet->addSheet($prSheet);
+        $spreadsheet->removeSheetByIndex(0);
+        $sheet = $spreadsheet->getActiveSheet();
 
-        $sheet->row(1, array('REKAP PURCHASE ORDER'));
+        $sheet->mergeCells('A1:N1');
+        $normalStyle = [
+            'font' => [
+                'name' => 'Calibri',
+                'size' => 11
+            ],
+        ];
 
-        $sheet->row(2, function ($row) {
-            $row->setFontFamily('Calibri');
-            $row->setFontSize(11);
-            $row->setFontWeight('bold');
-        });
+        $titleStyle = $normalStyle;
+        $titleStyle['alignment'] = ['horizontal' => Alignment::HORIZONTAL_CENTER];
+        $titleStyle['font']['bold'] = true;
+
+        $sheet->getStyle('A1:N1')->applyFromArray($titleStyle);
+        $sheet->setCellValue('A1','Rekap Purchase Order');
+
+        $headerStyle = $normalStyle;
+        $headerStyle['font']['bold'] = true;
+        $sheet->getStyle('A2:N2')->applyFromArray($headerStyle);;
+
+        $headerContent = ["NO", "No PO", "POSITION", "TYPE OF LETTER", "MONTH", "DATE", "TO", "ATTENTION", "TITLE", "PROJECT", "DESCRIPTION", "NAME", "ISSUANCE", "PROJECT ID"];
+        $sheet->fromArray($headerContent,NULL,'A2');
+
+        $year = date('Y');
 
         $datas = PONumberMSP::join('users', 'users.nik', '=', 'tb_po_msp.from')
-                    ->select('no','no_po', 'position', 'type_of_letter', 'month', 'date', 'to', 'attention', 'title', 'project', 'description', 'from', 'division', 'issuance', 'project_id','name')
-                    ->get();
+                ->join('tb_id_project', 'tb_po_msp.project_id', '=', 'tb_id_project.id_pro')
+                ->select('no_po', 'position', 'type_of_letter', 'month', 'tb_po_msp.date', 'to', 'attention', 'title', 'project', 'description', 'name', 'issuance', 'id_project')
+                ->whereYear('tb_po_msp.date',$year)
+                ->get();
 
-       // $sheet->appendRow(array_keys($datas[0]));
-            $sheet->row($sheet->getHighestRow(), function ($row) {
-                $row->setFontWeight('bold');
-            });
+        foreach ($datas as $key => $eachPo) {
+            $sheet->fromArray(array_merge([$key + 1],array_values($eachPo->toArray())),NULL,'A' . ($key + 3));
+        }
 
-             $datasheet = array();
-             $datasheet[0]  =   array("NO", "No Letter", "Position", "Type of Letter", "Month",  "Date", "To", "Attention", "Title", "Project", "Description", "From", "Issuance", "Project ID");
-             $i=1;
+        $sheet->getColumnDimension('A')->setAutoSize(true);
+        $sheet->getColumnDimension('B')->setAutoSize(true);
+        $sheet->getColumnDimension('C')->setAutoSize(true);
+        $sheet->getColumnDimension('D')->setAutoSize(true);
+        $sheet->getColumnDimension('E')->setAutoSize(true);
+        $sheet->getColumnDimension('F')->setAutoSize(true);
+        $sheet->getColumnDimension('G')->setAutoSize(true);
+        $sheet->getColumnDimension('H')->setAutoSize(true);
+        $sheet->getColumnDimension('I')->setAutoSize(true);
+        $sheet->getColumnDimension('J')->setAutoSize(true);
+        $sheet->getColumnDimension('K')->setAutoSize(true);
+        $sheet->getColumnDimension('L')->setAutoSize(true);
+        $sheet->getColumnDimension('M')->setAutoSize(true);
+        $sheet->getColumnDimension('N')->setAutoSize(true);
 
-            foreach ($datas as $data) {
-
-               // $sheet->appendrow($data);
-              $datasheet[$i] = array(
-                            $i,
-                            $data['no_po'],
-                            $data['position'],
-                            $data['type_of_letter'],
-                            $data['month'],
-                            $data['date'],
-                            $data['to'],
-                            $data['attention'],
-                            $data['title'],
-                            $data['project'],
-                            $data['description'],
-                            $data['name'],
-                            $data['issuance'],
-                            $data['project_id']
-                        );
-              
-              $i++;
-            }
-
-            $sheet->fromArray($datasheet);
-        });
-
-        })->export('xls');
+        $fileName = 'Rekap Purchase Order ' . date('Y') . '.xlsx';
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="' . $fileName . '"');
+        header('Cache-Control: max-age=0');
+        
+        $writer = new Xlsx($spreadsheet);
+        return $writer->save("php://output");
     }
 }
