@@ -34,6 +34,23 @@ class DASHBOARDController extends Controller
         $company = DB::table('users')->select('id_company')->where('nik', $nik)->first();
         $com = $company->id_company;
 
+        $purs = '';
+        $puos = '';
+        $quotes = '';
+        $results = '';
+        $idps = '';
+        $notifClaim = '';
+        $countmsp = '';
+        $losemsp = '';
+        $win1 = '';
+        $win2 = '';
+        $lose2 = '';
+        $lose1 = '';
+        $countss = '';
+        $openss = '';
+        $ba = '';
+        $co = '';
+        $inventory_in = '';
         
         // TOP 5
 
@@ -664,7 +681,7 @@ class DASHBOARDController extends Controller
 
        
 
-        return view('dashboard/dashboard', compact('cnotif', 'purs', 'puos', 'quotes', 'pos','div','results','idps', 'counts','opens', 'sds', 'tps', 'notiftp', 'notifsd', 'notifOpen', 'wins', 'loses', 'notif', 'notifClaim','countmsp','losemsp','win1','win2','lose1','lose2','countss','openss','ba','co', 'top_win_msp','inventory_in'));
+        return view('dashboard/dashboard', compact( 'purs', 'puos', 'quotes', 'pos','div','results','idps', 'counts','opens', 'sds', 'tps', 'notiftp', 'notifsd', 'notifOpen', 'wins', 'loses', 'notif', 'notifClaim','countmsp','losemsp','win1','win2','lose1','lose2','countss','openss','ba','co', 'top_win_msp','inventory_in'));
 
     }
 
