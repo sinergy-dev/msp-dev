@@ -12,6 +12,13 @@ use App\SalesProject;
 use App\PONumberMSP;
 use App\DOMSPNumber;
 
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
 class WarehouseReportController extends Controller
 {
     public function month_report() {
@@ -123,106 +130,95 @@ class WarehouseReportController extends Controller
 
     public function getDataMonthExcel(Request $request) {
 
-        $nama = 'data-inventory-per-bulan'.date("d-m-Y");
-        Excel::create($nama, function ($excel) use ($request) {
-            $excel->sheet('Inventory Data In', function ($sheet) use ($request) {
+        $spreadsheet = new Spreadsheet();
+
+        $spreadsheet->removeSheetByIndex(0);
+        $spreadsheet->addSheet(new Worksheet($spreadsheet,'Inventory Data In'));
+        $spreadsheet->addSheet(new Worksheet($spreadsheet,'Inventory Data Out'));
+
+        $InSheet = $spreadsheet->setActiveSheetIndex(0);
+        $OutSheet = $spreadsheet->setActiveSheetIndex(1);
+
+        $InSheet->mergeCells('A1:E1');
+        $OutSheet->mergeCells('A1:E1');
+        $normalStyle = [
+            'font' => [
+                'name' => 'Calibri',
+                'size' => 11
+            ],
+        ];
+
+        $titleStyle = $normalStyle;
+        $titleStyle['alignment'] = ['horizontal' => Alignment::HORIZONTAL_CENTER];
+        $titleStyle['borders'] = ['outline' => ['borderStyle' => Border::BORDER_THIN]];
+        $titleStyle['fill'] = ['fillType' => Fill::FILL_SOLID, 'startColor' => ["argb" => "FFFCD703"]];
+        $titleStyle['font']['bold'] = true;
+
+        $headerStyle = $normalStyle;
+        $headerStyle['font']['bold'] = true;
+
+        $InSheet->getStyle('A1:E1')->applyFromArray($titleStyle);
+        $InSheet->setCellValue('A1','Data Inventory In');
+
+        $reportpo = Inventory_msp::join('inventory_changelog_msp','inventory_changelog_msp.id_product','=','inventory_produk_msp.id_product')
+                    ->select('inventory_produk_msp.kode_barang', 'inventory_produk_msp.nama', DB::raw('sum(inventory_changelog_msp.qty) as total_terima'), 'inventory_produk_msp.unit')
+                    ->whereBetween('inventory_changelog_msp.created_at', [$request->start, $request->end])
+                    ->where('inventory_changelog_msp.status', '=', 'P')
+                    ->groupBy('inventory_changelog_msp.id_product')
+                    ->get();
+
+        $headerContent = ["No", "MSP Code", "Nama Barang", "Quantity", "Unit"];
+        $InSheet->getStyle('A2:E2')->applyFromArray($headerStyle);
+        $InSheet->fromArray($headerContent,NULL,'A2');
+
+        $reportpo->map(function($item,$key) use ($InSheet){
+            $InSheet->fromArray(array_merge([$key + 1],array_values($item->toArray())),NULL,'A' . ($key + 3));
+        });
+
+        $InSheet->getColumnDimension('A')->setAutoSize(true);
+        $InSheet->getColumnDimension('B')->setAutoSize(true);
+        $InSheet->getColumnDimension('C')->setAutoSize(true);
+        $InSheet->getColumnDimension('D')->setAutoSize(true);
+        $InSheet->getColumnDimension('E')->setAutoSize(true);
+
+        $OutSheet->getStyle('A1:E1')->applyFromArray($titleStyle);
+        $OutSheet->setCellValue('A1','Data Inventory Out');
+
+        $reportdo = SalesProject::join('inventory_delivery_msp', 'inventory_delivery_msp.id_project', '=', 'tb_id_project.id_pro')
+                ->join('tb_do_msp','tb_do_msp.no','=','inventory_delivery_msp.no_do')
+                ->join('inventory_delivery_msp_transaction','inventory_delivery_msp_transaction.id_transaction','=','inventory_delivery_msp.id_transaction')
+                ->join('inventory_produk_msp', 'inventory_produk_msp.id_product', '=', 'inventory_delivery_msp_transaction.fk_id_product')
+                ->select('inventory_produk_msp.kode_barang', 'inventory_produk_msp.nama', DB::raw('sum(qty_transac) as total_transac'), 'inventory_produk_msp.unit')
+                ->where('inventory_delivery_msp.updated_at', '>=', $request->start)
+                ->where('inventory_delivery_msp.updated_at', '<=', $request->end)
+                ->where('inventory_delivery_msp.status_kirim', '=', 'kirim')
+                ->orWhere('inventory_delivery_msp.status_kirim', '=', 'SENT')
+                ->groupBy('inventory_produk_msp.id_product')
+                ->get();
+
+        $headerContent = ["No","MSP Code", "Nama Barang","Quantity", "Unit"];
+        $OutSheet->getStyle('A2:E2')->applyFromArray($headerStyle);
+        $OutSheet->fromArray($headerContent,NULL,'A2');
+
+        foreach ($reportdo as $key => $eachOut) {
+            $OutSheet->fromArray(array_merge([$key + 1],array_values($eachOut->toArray())),NULL,'A' . ($key + 3));
+        }
+
+        $OutSheet->getColumnDimension('A')->setAutoSize(true);
+        $OutSheet->getColumnDimension('B')->setAutoSize(true);
+        $OutSheet->getColumnDimension('C')->setAutoSize(true);
+        $OutSheet->getColumnDimension('D')->setAutoSize(true);
+        $OutSheet->getColumnDimension('E')->setAutoSize(true);
+
+        $spreadsheet->setActiveSheetIndex(0);
+
+        $fileName = 'Data inventory per idproject '. date('Y-m-d'). '.xlsx';
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="' . $fileName . '"');
+        header('Cache-Control: max-age=0');
         
-                $sheet->mergeCells('A1:E1');
-
-                $sheet->row(1, function ($row) {
-                    $row->setFontFamily('Calibri');
-                    $row->setFontSize(11);
-                    $row->setAlignment('center');
-                    $row->setFontWeight('bold');
-                });
-
-                $sheet->row(1, array('IN'));
-
-                $sheet->row(2, function ($row) {
-                    $row->setFontFamily('Calibri');
-                    $row->setFontSize(11);
-                    $row->setFontWeight('bold');
-                });
-
-                $reportpo = Inventory_msp::join('inventory_changelog_msp','inventory_changelog_msp.id_product','=','inventory_produk_msp.id_product')
-                                ->select(DB::raw('sum(inventory_changelog_msp.qty) as total_terima'), 'inventory_produk_msp.kode_barang', 'inventory_produk_msp.nama', 'inventory_produk_msp.unit', 'inventory_produk_msp.created_at')
-                                ->whereBetween('inventory_changelog_msp.created_at', [$request->start, $request->end])
-                                ->where('inventory_changelog_msp.status', '=', 'P')
-                                ->groupBy('inventory_changelog_msp.id_product')
-                                ->get();
-
-                    $datasheetpo = array();
-                    $datasheetpo[0] = array("NO", "MSP CODE", "NAMA BARANG", "QTY", 'UNIT');
-                    $i=1;
-
-                    foreach ($reportpo as $data) {
-
-                        $datasheetpo[$i] = array($i,
-                                    $data['kode_barang'],
-                                    $data['nama'],
-                                    $data['total_terima'],
-                                    $data['unit']
-                                );
-                        $i++;
-                    }
-
-                    $sheet->fromArray($datasheetpo);
-                    
-            });
-
-            $excel->sheet('Inventory Data Out', function ($sheet) use ($request) {
-        
-                $sheet->mergeCells('A1:E1');
-
-                $sheet->row(1, function ($row) {
-                    $row->setFontFamily('Calibri');
-                    $row->setFontSize(11);
-                    $row->setAlignment('center');
-                    $row->setFontWeight('bold');
-                });
-
-                $sheet->row(1, array('OUT'));
-
-                $sheet->row(2, function ($row) {
-                    $row->setFontFamily('Calibri');
-                    $row->setFontSize(11);
-                    $row->setFontWeight('bold');
-                });
-
-                $reportdo = SalesProject::join('inventory_delivery_msp', 'inventory_delivery_msp.id_project', '=', 'tb_id_project.id_pro')
-                                ->join('tb_do_msp','tb_do_msp.no','=','inventory_delivery_msp.no_do')
-                                ->join('inventory_delivery_msp_transaction','inventory_delivery_msp_transaction.id_transaction','=','inventory_delivery_msp.id_transaction')
-                                ->join('inventory_produk_msp', 'inventory_produk_msp.id_product', '=', 'inventory_delivery_msp_transaction.fk_id_product')
-                                ->select(DB::raw('sum(qty_transac) as total_transac'), 'inventory_produk_msp.nama', 'inventory_produk_msp.kode_barang', 'inventory_produk_msp.unit', 'inventory_produk_msp.updated_at')
-                                ->where('inventory_delivery_msp.updated_at', '>=', $request->start)
-                                ->where('inventory_delivery_msp.updated_at', '<=', $request->end)
-                                ->where('inventory_delivery_msp.status_kirim', '=', 'kirim')
-                                ->orWhere('inventory_delivery_msp.status_kirim', '=', 'SENT')
-                                ->groupBy('inventory_produk_msp.id_product')
-                                ->get();
-
-                    
-
-                    $datasheetdo = array();
-                    $datasheetdo[0] = array("NO", "MSP CODE", "NAMA BARANG", "QTY", 'UNIT');
-                    $i=1;
-
-                    foreach ($reportdo as $data) {
-
-                        $datasheetdo[$i] = array($i,
-                                    $data['kode_barang'],
-                                    $data['nama'],
-                                    $data['total_transac'],
-                                    $data['unit']
-                                );
-                        $i++;
-                    }
-
-                    $sheet->fromArray($datasheetdo);
-                    
-            });
-
-        })->export('xls');
+        $writer = new Xlsx($spreadsheet);
+        return $writer->save("php://output");
 
     }
 
@@ -694,203 +690,166 @@ class WarehouseReportController extends Controller
     }
 
     public function getdataidproexcel(Request $request)
-    {
-        $nama = 'data-inventory-per-idproject '.date("d-m-Y");
-        Excel::create($nama, function ($excel) use ($request) {
-            $excel->sheet('Inventory Data In', function ($sheet) use ($request) {
-        
-                $sheet->mergeCells('A1:E1');
+    {    
+        $spreadsheet = new Spreadsheet();
 
-                $sheet->row(1, function ($row) {
-                    $row->setFontFamily('Calibri');
-                    $row->setFontSize(11);
-                    $row->setAlignment('center');
-                    $row->setFontWeight('bold');
-                });
+        $spreadsheet->removeSheetByIndex(0);
+        $spreadsheet->addSheet(new Worksheet($spreadsheet,'Inventory Data In'));
+        $spreadsheet->addSheet(new Worksheet($spreadsheet,'Inventory Data Out'));
+        $spreadsheet->addSheet(new Worksheet($spreadsheet,'No Purchase Order'));
+        $spreadsheet->addSheet(new Worksheet($spreadsheet,'No Delivery Order'));
+        $InSheet = $spreadsheet->setActiveSheetIndex(0);
+        $OutSheet = $spreadsheet->setActiveSheetIndex(1);
+        $PoSheet = $spreadsheet->setActiveSheetIndex(2);
+        $DoSheet = $spreadsheet->setActiveSheetIndex(3);
 
-                $sheet->row(1, array('IN'));
+        $InSheet->mergeCells('A1:E1');
+        $OutSheet->mergeCells('A1:E1');
+        $PoSheet->mergeCells('A1:B1');
+        $DoSheet->mergeCells('A1:B1');
+        $normalStyle = [
+            'font' => [
+                'name' => 'Calibri',
+                'size' => 11
+            ],
+        ];
 
-                $sheet->row(2, function ($row) {
-                    $row->setFontFamily('Calibri');
-                    $row->setFontSize(11);
-                    $row->setFontWeight('bold');
-                });
+        $titleStyle = $normalStyle;
+        $titleStyle['alignment'] = ['horizontal' => Alignment::HORIZONTAL_CENTER];
+        $titleStyle['borders'] = ['outline' => ['borderStyle' => Border::BORDER_THIN]];
+        $titleStyle['fill'] = ['fillType' => Fill::FILL_SOLID, 'startColor' => ["argb" => "FFFCD703"]];
+        $titleStyle['font']['bold'] = true;
 
-                $id_pro = DB::table('tb_id_project')
+        $headerStyle = $normalStyle;
+        $headerStyle['font']['bold'] = true;
+
+        $InSheet->getStyle('A1:E1')->applyFromArray($titleStyle);
+        $InSheet->setCellValue('A1','Data Inventory In');
+
+        $id_pro = DB::table('tb_id_project')
                         ->where('id_pro', $request->type)
                         ->value('id_pro');
 
-                $nopoo = Inventory_msp::join('tb_pr_product_msp', 'tb_pr_product_msp.id_barang', '=', 'inventory_produk_msp.id_product')
-                            ->join('tb_po_asset_msp', 'tb_po_asset_msp.id_po_asset', '=', 'tb_pr_product_msp.id_po_asset')
-                            ->join('tb_id_project', 'tb_id_project.id_pro', '=', 'tb_po_asset_msp.project_id')
-                            ->select(DB::raw('sum(tb_pr_product_msp.qty_terima) as total_terima'), 'inventory_produk_msp.nama', 'inventory_produk_msp.unit', 'inventory_produk_msp.kode_barang')
-                            ->where('tb_po_asset_msp.project_id', $id_pro)
-                            ->groupBy('tb_pr_product_msp.id_barang')
-                            ->get();
-
-
-                    $datasheetpo = array();
-                    $datasheetpo[0] = array("NO", "MSP CODE", "NAMA BARANG", "QTY", 'UNIT');
-                    $i=1;
-
-                    foreach ($nopoo as $data) {
-
-                        $datasheetpo[$i] = array($i,
-                                    $data['kode_barang'],
-                                    $data['nama'],
-                                    $data['total_terima'],
-                                    $data['unit']
-                                );
-                        $i++;
-                    }
-
-                    $sheet->fromArray($datasheetpo);
-                    
-            });
-
-            $excel->sheet('Inventory Data Out', function ($sheet) use ($request) {
-        
-                $sheet->mergeCells('A1:E1');
-
-                $sheet->row(1, function ($row) {
-                    $row->setFontFamily('Calibri');
-                    $row->setFontSize(11);
-                    $row->setAlignment('center');
-                    $row->setFontWeight('bold');
-                });
-
-                $sheet->row(1, array('Out'));
-
-                $sheet->row(2, function ($row) {
-                    $row->setFontFamily('Calibri');
-                    $row->setFontSize(11);
-                    $row->setFontWeight('bold');
-                });
-
-                $id_pro = DB::table('tb_id_project')
-                        ->where('id_pro', $request->type)
-                        ->value('id_pro');
-
-                $nodoo = Inventory_msp::join('inventory_delivery_msp_transaction', 'inventory_produk_msp.id_product', '=', 'inventory_delivery_msp_transaction.fk_id_product')
-                    ->join('inventory_delivery_msp', 'inventory_delivery_msp.id_transaction', '=', 'inventory_delivery_msp_transaction.id_transaction')
-                    ->join('tb_id_project', 'tb_id_project.id_pro', '=', 'inventory_delivery_msp.id_project')
-                    ->select(DB::raw('sum(inventory_delivery_msp_transaction.qty_transac) as total_transac'), 'inventory_produk_msp.nama', 'inventory_produk_msp.unit', 'inventory_produk_msp.kode_barang')
-                    ->where('inventory_delivery_msp.id_project', $id_pro)
-                    ->groupBy('inventory_delivery_msp_transaction.fk_id_product')
+        $nopoo = Inventory_msp::join('tb_pr_product_msp', 'tb_pr_product_msp.id_barang', '=', 'inventory_produk_msp.id_product')
+                    ->join('tb_po_asset_msp', 'tb_po_asset_msp.id_po_asset', '=', 'tb_pr_product_msp.id_po_asset')
+                    ->join('tb_id_project', 'tb_id_project.id_pro', '=', 'tb_po_asset_msp.project_id')
+                    ->select('inventory_produk_msp.kode_barang', 'inventory_produk_msp.nama', DB::raw('sum(tb_pr_product_msp.qty_terima) as total_terima'), 'inventory_produk_msp.unit')
+                    ->where('tb_po_asset_msp.project_id', $id_pro)
+                    ->groupBy('tb_pr_product_msp.id_barang')
                     ->get();
 
+        $headerContent = ["No", "MSP Code", "Nama Barang", "Quantity", "Unit"];
+        $InSheet->getStyle('A2:E2')->applyFromArray($headerStyle);
+        $InSheet->fromArray($headerContent,NULL,'A2');
 
-                    $datasheetdo = array();
-                    $datasheetdo[0] = array("NO", "MSP CODE", "NAMA BARANG", "QTY", 'UNIT');
-                    $i=1;
+        $nopoo->map(function($item,$key) use ($InSheet){
+            $InSheet->fromArray(array_merge([$key + 1],array_values($item->toArray())),NULL,'A' . ($key + 3));
+        });
 
-                    foreach ($nodoo as $data) {
+        $InSheet->getColumnDimension('A')->setAutoSize(true);
+        $InSheet->getColumnDimension('B')->setAutoSize(true);
+        $InSheet->getColumnDimension('C')->setAutoSize(true);
+        $InSheet->getColumnDimension('D')->setAutoSize(true);
+        $InSheet->getColumnDimension('E')->setAutoSize(true);
 
-                        $datasheetdo[$i] = array($i,
-                                    $data['kode_barang'],
-                                    $data['nama'],
-                                    $data['total_transac'],
-                                    $data['unit']
-                                );
-                        $i++;
-                    }
+        $OutSheet->getStyle('A1:E1')->applyFromArray($titleStyle);
+        $OutSheet->setCellValue('A1','Data Inventory Out');
 
-                    $sheet->fromArray($datasheetdo);
-                    
-            });
-
-            $excel->sheet('No Purchase Order', function ($sheet) use ($request) {
-        
-                $sheet->mergeCells('A1:B1');
-
-                $sheet->row(1, function ($row) {
-                    $row->setFontFamily('Calibri');
-                    $row->setFontSize(11);
-                    $row->setAlignment('center');
-                    $row->setFontWeight('bold');
-                });
-
-                $sheet->row(1, array('Purchase Order'));
-
-                $sheet->row(2, function ($row) {
-                    $row->setFontFamily('Calibri');
-                    $row->setFontSize(11);
-                    $row->setFontWeight('bold');
-                });
-
-                $id_pro = DB::table('tb_id_project')
+        $id_pro = DB::table('tb_id_project')
                         ->where('id_pro', $request->type)
                         ->value('id_pro');
 
-                $no_po = PONumberMSP::join('tb_id_project', 'tb_id_project.id_pro', '=', 'tb_po_msp.project_id')
-                        ->join('tb_po_asset_msp', 'tb_po_msp.no', '=', 'tb_po_asset_msp.no_po')
-                        ->select('tb_po_msp.no_po')
-                        ->where('tb_po_asset_msp.project_id', $id_pro)
-                        ->get();
+        $nodoo = Inventory_msp::join('inventory_delivery_msp_transaction', 'inventory_produk_msp.id_product', '=', 'inventory_delivery_msp_transaction.fk_id_product')
+            ->join('inventory_delivery_msp', 'inventory_delivery_msp.id_transaction', '=', 'inventory_delivery_msp_transaction.id_transaction')
+            ->join('tb_id_project', 'tb_id_project.id_pro', '=', 'inventory_delivery_msp.id_project')
+            ->select( 'inventory_produk_msp.kode_barang', 'inventory_produk_msp.nama', DB::raw('sum(inventory_delivery_msp_transaction.qty_transac) as total_transac'), 'inventory_produk_msp.unit')
+            ->where('inventory_delivery_msp.id_project', $id_pro)
+            ->groupBy('inventory_delivery_msp_transaction.fk_id_product')
+            ->get();
 
-                    $datasheetnopo = array();
-                    $datasheetnopo[0] = array("NO", "NO Purchase Order");
-                    $i=1;
+        $headerContent = ["No","MSP Code", "Nama Barang","Quantity", "Unit"];
+        $OutSheet->getStyle('A2:E2')->applyFromArray($headerStyle);
+        $OutSheet->fromArray($headerContent,NULL,'A2');
 
-                    foreach ($no_po as $data) {
+        foreach ($nodoo as $key => $eachOut) {
+            $OutSheet->fromArray(array_merge([$key + 1],array_values($eachOut->toArray())),NULL,'A' . ($key + 3));
+        }
 
-                        $datasheetnopo[$i] = array($i,
-                                    $data['no_po']
-                                );
-                        $i++;
-                    }
+        $OutSheet->getColumnDimension('A')->setAutoSize(true);
+        $OutSheet->getColumnDimension('B')->setAutoSize(true);
+        $OutSheet->getColumnDimension('C')->setAutoSize(true);
+        $OutSheet->getColumnDimension('D')->setAutoSize(true);
+        $OutSheet->getColumnDimension('E')->setAutoSize(true);
 
-                    $sheet->fromArray($datasheetnopo);
-                    
-            });
+        $PoSheet->getStyle('A1:B1')->applyFromArray($titleStyle);
+        $PoSheet->setCellValue('A1','Report No Purchase Order');
 
-            $excel->sheet('No Delivery Order', function ($sheet) use ($request) {
-        
-                $sheet->mergeCells('A1:B1');
-
-                $sheet->row(1, function ($row) {
-                    $row->setFontFamily('Calibri');
-                    $row->setFontSize(11);
-                    $row->setAlignment('center');
-                    $row->setFontWeight('bold');
-                });
-
-                $sheet->row(1, array('Delivery Order'));
-
-                $sheet->row(2, function ($row) {
-                    $row->setFontFamily('Calibri');
-                    $row->setFontSize(11);
-                    $row->setFontWeight('bold');
-                });
-
-                $id_pro = DB::table('tb_id_project')
+        $id_pro = DB::table('tb_id_project')
                         ->where('id_pro', $request->type)
                         ->value('id_pro');
 
-                $no_do = DOMSPNumber::join('tb_id_project', 'tb_id_project.id_pro', '=', 'tb_do_msp.project_id')
-                        ->join('inventory_delivery_msp', 'inventory_delivery_msp.no_do', '=', 'tb_do_msp.no_do')
-                        ->select('tb_do_msp.no_do')
-                        ->where('inventory_delivery_msp.id_project', $id_pro)
-                        ->get();
+        $no_po = PONumberMSP::join('tb_id_project', 'tb_id_project.id_pro', '=', 'tb_po_msp.project_id')
+                ->join('tb_po_asset_msp', 'tb_po_msp.no', '=', 'tb_po_asset_msp.no_po')
+                ->select('tb_po_msp.no_po')
+                ->where('tb_po_asset_msp.project_id', $id_pro)
+                ->get();
 
+        $headerContent = ["No", "No Purchase Order"];
+        $PoSheet->getStyle('A2:B2')->applyFromArray($headerStyle);
+        $PoSheet->fromArray($headerContent,NULL,'A2');
 
-                    $datasheetnodo = array();
-                    $datasheetnodo[0] = array("NO", "NO Delivery Order");
-                    $i=1;
+        foreach ($no_po as $key => $eachPo) {
+            $PoSheet->fromArray(array_merge([$key + 1],array_values($eachPo->toArray())),NULL,'A' . ($key + 3));
+        }
 
-                    foreach ($no_do as $data) {
+        $PoSheet->getColumnDimension('A')->setAutoSize(true);
+        $PoSheet->getColumnDimension('B')->setAutoSize(true);
 
-                        $datasheetnodo[$i] = array($i,
-                                    $data['no_do']
-                                );
-                        $i++;
-                    }
+        $normalStyle = [
+            'font' => [
+                'name' => 'Calibri',
+                'size' => 8
+            ],
+        ];
 
-                    $sheet->fromArray($datasheetnodo);
-                    
-            });
+        $DoSheet->getStyle('A1:B1')->applyFromArray($titleStyle);
+        $DoSheet->setCellValue('A1','Report No Delivery Order');
 
-        })->export('xls');
+        $headerContent = ["No","No Delivery Order"];
+        $DoSheet->getStyle('A2:B2')->applyFromArray($headerStyle);
+        $DoSheet->fromArray($headerContent,NULL,'A2');
+
+        $itemStyle = $normalStyle;
+        $itemStyle['fill'] = ['fillType' => Fill::FILL_SOLID, 'startColor' => ["argb" => "FFFFFE9F"]];
+        $itemStyle['borders'] = ['allBorders' => ['borderStyle' => Border::BORDER_THIN]];
+
+        $id_pro = DB::table('tb_id_project')
+                        ->where('id_pro', $request->type)
+                        ->value('id_pro');
+
+        $no_do = DOMSPNumber::join('tb_id_project', 'tb_id_project.id_pro', '=', 'tb_do_msp.project_id')
+                ->join('inventory_delivery_msp', 'inventory_delivery_msp.no_do', '=', 'tb_do_msp.no_do')
+                ->select('tb_do_msp.no_do')
+                ->where('inventory_delivery_msp.id_project', $id_pro)
+                ->get();
+
+        foreach ($no_do as $key => $eachDo) {
+            $DoSheet->fromArray(array_merge([$key + 1],array_values($eachDo->toArray())),NULL,'A' . ($key + 3));
+        }
+
+        $DoSheet->getColumnDimension('A')->setAutoSize(true);
+        $DoSheet->getColumnDimension('B')->setAutoSize(true);
+
+        $spreadsheet->setActiveSheetIndex(0);
+
+        $fileName = 'Data inventory per idproject '. date('Y-m-d'). '.xlsx';
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="' . $fileName . '"');
+        header('Cache-Control: max-age=0');
+        
+        $writer = new Xlsx($spreadsheet);
+        return $writer->save("php://output");
+        
     }
 
     public function getdataidpro2(Request $request)
