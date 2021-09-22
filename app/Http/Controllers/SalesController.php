@@ -66,6 +66,17 @@ class SALESController extends Controller
 
         $year_now = date('Y');
 
+        $id_pro = '';
+        $contributes = '';
+        $pmo_nik = '';
+        $notifClaim = '';
+        $cek_initial = '';
+        $datas = '';
+        $rk = '';
+        $gp = '';
+        $st = '';
+        $leadspre = '';
+
         if($div == 'TECHNICAL PRESALES' && $pos == 'STAFF' && $com == '2') {
             $lead = DB::table('sales_lead_register')
                 ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
@@ -768,6 +779,11 @@ class SALESController extends Controller
         $company = DB::table('users')->select('id_company')->where('nik', $nik)->first();
         $com = $company->id_company;
 
+        $pre_cont = '';
+        $pmo_id = '';
+        $pmo_contribute = '';
+        $notifClaim = '';
+
         if($ter != null){
             $lead = DB::table('sales_lead_register')
                 ->join('users', 'users.nik', '=', 'sales_lead_register.nik')
@@ -886,7 +902,7 @@ class SALESController extends Controller
         $get_quote_number = DB::table('tb_quote_msp')
                             ->join('tb_contact', 'tb_contact.id_customer', '=', 'tb_quote_msp.customer_id')
                             ->select('id_quote', 'quote_number', 'customer_legal_name')
-                            ->where('status', null)
+                            ->where('tb_quote_msp.status', null)
                             ->where('customer_id', $tampilkan->id_customer)
                             ->orderBy('quote_number', 'desc')
                             ->get();
@@ -2074,6 +2090,8 @@ class SALESController extends Controller
             ->get();
         }
 
+        $notifClaim = '';
+
         if (Auth::User()->id_position == 'ADMIN') {
             $notifClaim = DB::table('dvg_esm')
                             ->select('nik_admin', 'personnel', 'type')
@@ -2182,6 +2200,8 @@ class SALESController extends Controller
         $pos = $position->id_position;
 
         $pops = SalesProject::select('id_project')->orderBy('id_project','desc')->first();
+        $notifClaim = '';
+        $datas = '';
 
         if ($div == 'SALES' && $pos != 'ADMIN') {
             $salessp = DB::table('tb_id_project')
