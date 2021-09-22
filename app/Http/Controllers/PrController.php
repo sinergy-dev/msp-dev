@@ -184,7 +184,7 @@ class PrController extends Controller
                             ->get();
         }
 
-        return view('admin/pr', compact('lead', 'total_ter','notif','notifOpen','notifsd','notiftp','id_pro', 'datas', 'notifClaim','pops'));
+        return view('admin/pr', compact('total_ter','notif','notifOpen','notifsd','notiftp','id_pro', 'datas', 'notifClaim','pops'));
     }
 
     /**
