@@ -33,6 +33,8 @@ class PrMSPController extends Controller
         $position = DB::table('users')->select('id_position')->where('nik', $nik)->first();
         $pos = $position->id_position; 
 
+        $notifClaim = '';
+
         if ($ter != null) {
             $notif = DB::table('sales_lead_register')
             ->select('opp_name','nik')
@@ -214,7 +216,7 @@ class PrMSPController extends Controller
                         ->where('id_company', '2')
                         ->get();*/
 
-        return view('admin_msp/pr', compact('lead', 'total_ter','notif','notifOpen','notifsd','notiftp','id_pro', 'datas','notifClaim', 'id_pro', 'id_pro_stock', 'datas2'));
+        return view('admin_msp/pr', compact('notif','notifOpen','notifsd','notiftp','id_pro', 'datas','notifClaim', 'id_pro', 'id_pro_stock', 'datas2'));
     }
 
     /**
