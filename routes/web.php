@@ -374,6 +374,7 @@ Route::group(['middleware' => ['MSP']], function () {
 	Route::post('/revisi_stok', 'WarehouseProjectController@revisi_stok');
 	Route::get('/dropdownPO2', 'WarehouseProjectController@getDropdownPO');
 	Route::get('/filterTableWarehouse','WarehouseProjectController@filterTableWarehouse');
+	Route::get('/inventory/getDataDo', 'WarehouseProjectController@getDataDo');
 
 	//category+type
 	Route::get('/category', 'WarehouseController@category_index');
