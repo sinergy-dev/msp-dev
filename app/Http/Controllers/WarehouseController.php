@@ -26,6 +26,13 @@ use DB;
 
 use Maatwebsite\Excel\Facades\Excel;
 
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
 class WarehouseController extends Controller
 {
 
@@ -456,6 +463,16 @@ class WarehouseController extends Controller
         $position = DB::table('users')->select('id_position')->where('nik', $nik)->first();
         $pos = $position->id_position;
 
+        $notif = '';
+        $notifOpen = '';
+        $notifsd = '';
+        $notiftp = '';
+        $notifc = '';
+        $notifem = '';
+        $notifClaim = '';
+        $category = '';
+        $type = '';
+
         $data = DB::table('inventory_produk_msp')
                 ->select('nama','qty','unit','inventory_produk_msp.note','inventory_produk_msp.id_product','inventory_produk_msp.status','inventory_produk_msp.id_po','inventory_produk_msp.kode_barang','status2','kategori','name','inventory_produk_msp.tipe')
                 ->join('cat_inventory_produk_msp','cat_inventory_produk_msp.id','=','inventory_produk_msp.kategori')
@@ -493,57 +510,63 @@ class WarehouseController extends Controller
         return view('gudang/gudang_msp', compact('notif','notifOpen','notifsd','notiftp','notifClaim','data','notifc','notifem','category','type','po','datas','categorys','com_categorys','datam'));
     }
 
-    public function getdatawarehouse(Request $request) {
+    public function getdatawarehouse(Request $request) 
+    {
+        $spreadsheet = new Spreadsheet();
 
-        $nama = 'STOCK '.date("d-m-Y");
-        Excel::create($nama, function ($excel) use ($request) {
-            $excel->sheet('Data Warehouse', function ($sheet) use ($request) {
+        $prSheet = new Worksheet($spreadsheet,'Data Wareohuse');
+        $spreadsheet->addSheet($prSheet);
+        $spreadsheet->removeSheetByIndex(0);
+        $sheet = $spreadsheet->getActiveSheet();
 
-                $sheet->mergeCells('A1:G1');
+        $sheet->mergeCells('A1:G1');
+        $normalStyle = [
+            'font' => [
+                'name' => 'Calibri',
+                'size' => 11
+            ],
+        ];
 
-                $sheet->row(1, function ($row) {
-                    $row->setFontFamily('Calibri');
-                    $row->setFontSize(11);
-                    $row->setAlignment('center');
-                    $row->setFontWeight('bold');
-                });
+        $titleStyle = $normalStyle;
+        $titleStyle['alignment'] = ['horizontal' => Alignment::HORIZONTAL_CENTER];
+        $titleStyle['font']['bold'] = true;
 
-                $sheet->row(1, array('DATA WAREHOUSE'));
+        $sheet->getStyle('A1:G1')->applyFromArray($titleStyle);
+        $sheet->setCellValue('A1','Data Warehouse');
 
-                $sheet->row(2, function ($row) {
-                    $row->setFontFamily('Calibri');
-                    $row->setFontSize(11);
-                    $row->setAlignment('center');
-                    $row->setFontWeight('bold');
-                });
+        $headerStyle = $normalStyle;
+        $headerStyle['font']['bold'] = true;
+        $sheet->getStyle('A2:G2')->applyFromArray($headerStyle);;
 
-                $data = Inventory_msp::join('cat_inventory_produk_msp','cat_inventory_produk_msp.id','=','inventory_produk_msp.kategori')
-                            ->select('kode_barang', 'name', 'sn', 'nama', 'qty', 'unit')
-                            ->where('cat_inventory_produk_msp.status','project')
-                            ->get();
+        $headerContent = ["NO", "MSP CODE", "MERK BARANG", "SERIAL NUMBER", "NAMA PRODUK", "STOK", "KETERANGAN"];
+        $sheet->fromArray($headerContent,NULL,'A2');
 
-                    $datasheetpo = array();
-                    $datasheetpo[0] = array("NO", "MSP CODE", "MEREK BARANG", "SERIAL NUMBER", "NAMA PRODUK", "STOK", "KETERANGAN");
-                    $i=1;
+        $year = date('Y');
 
-                    foreach ($data as $datas) {
+        $datas = Inventory_msp::join('cat_inventory_produk_msp','cat_inventory_produk_msp.id','=','inventory_produk_msp.kategori')
+                ->select('kode_barang', 'name', 'sn', 'nama', 'qty', 'unit')
+                ->where('cat_inventory_produk_msp.status','project')
+                ->get();
 
-                        $datasheetpo[$i] = array($i,
-                                    $datas['kode_barang'],
-                                    $datas['name'],
-                                    $datas['sn'],
-                                    $datas['nama'],
-                                    $datas['qty'],
-                                    $datas['unit']
-                                );
-                        $i++;
-                    }
+        foreach ($datas as $key => $data) {
+            $sheet->fromArray(array_merge([$key + 1],array_values($data->toArray())),NULL,'A' . ($key + 3));
+        }
 
-                    $sheet->fromArray($datasheetpo);
-                    
-            });
-        })->export('xls');
+        $sheet->getColumnDimension('A')->setAutoSize(true);
+        $sheet->getColumnDimension('B')->setAutoSize(true);
+        $sheet->getColumnDimension('C')->setAutoSize(true);
+        $sheet->getColumnDimension('D')->setAutoSize(true);
+        $sheet->getColumnDimension('E')->setAutoSize(true);
+        $sheet->getColumnDimension('F')->setAutoSize(true);
+        $sheet->getColumnDimension('G')->setAutoSize(true);
 
+        $fileName = 'Stok Barang ' . date('Y') . '.xlsx';
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="' . $fileName . '"');
+        header('Cache-Control: max-age=0');
+        
+        $writer = new Xlsx($spreadsheet);
+        return $writer->save("php://output");
     }
 
     // public function turunkan_jml(Request $request) {
@@ -1085,6 +1108,8 @@ class WarehouseController extends Controller
         $div = $division->id_division;
         $position = DB::table('users')->select('id_position')->where('nik', $nik)->first();
         $pos = $position->id_position; 
+
+        $count_keg = '';
        
         $detail = DB::table('inventory_produk_msp')
             ->join('inventory_changelog_msp','inventory_changelog_msp.id_product','=','inventory_produk_msp.id_product')
@@ -1116,7 +1141,7 @@ class WarehouseController extends Controller
         $cek = Inventory_msp::select('status2')->where('id_product',$id_product)->first();
 
 
-        return view('gudang/detail_gudang_msp', compact('cek','sn','detail','notif','notifOpen','notifsd','notiftp','notifc','notifem','datak','keg','notes','dating','notifClaim','count_keg'));
+        return view('gudang/detail_gudang_msp', compact('cek','sn','detail','datak','keg','notes','dating','count_keg'));
     }    
 
     public function getDropdownPO(Request $request)
