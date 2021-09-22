@@ -23,6 +23,7 @@ use App\Project_msp_changelog;
 use App\POAssetMSP;
 use App\pam_produk_msp;
 use App\SalesProject;
+use App\Mail\ApproveDeliveryOrder;
 use DB;
 use PDF;
 use Excel;
@@ -478,11 +479,25 @@ class WarehouseProjectController extends Controller
     {
         $id_transaction = $request['id_transac_edit'];
 
+        $detail_barang = WarehouseProjectMSPDetail::join('inventory_delivery_msp','inventory_delivery_msp.id_transaction','=',
+                'inventory_delivery_msp_transaction.id_transaction')
+                ->join('inventory_produk_msp','inventory_produk_msp.id_product','=','inventory_delivery_msp_transaction.fk_id_product')
+                ->select('inventory_produk_msp.nama','inventory_produk_msp.kode_barang','inventory_delivery_msp_transaction.note','inventory_delivery_msp_transaction.qty_transac','inventory_produk_msp.unit','inventory_produk_msp.id_product','inventory_delivery_msp.id_transaction','inventory_produk_msp.qty')
+                ->where('inventory_delivery_msp_transaction.id_transaction',$id_transaction)
+                ->orderBy('inventory_delivery_msp_transaction.created_at','desc')
+                ->get();
+
+        $details = WarehouseProjectMSP::join('tb_do_msp','tb_do_msp.no','=','inventory_delivery_msp.no_do')
+            ->join('tb_id_project','tb_id_project.id_pro','=','inventory_delivery_msp.id_project')
+            ->select('inventory_delivery_msp.to_agen','inventory_delivery_msp.to_agen','inventory_delivery_msp.id_transaction','tb_do_msp.no','inventory_delivery_msp.id_project','inventory_delivery_msp.created_at','inventory_delivery_msp.status_kirim','tb_id_project.id_pro','tb_id_project.id_project','tb_do_msp.no_do')
+            ->where('inventory_delivery_msp.id_transaction',$id_transaction)
+            ->first();
+
         $update = WarehouseProjectMSP::where('id_transaction',$id_transaction)->first();
         if(Auth::User()->id_division == 'PMO') {
-        $update->status_kirim = 'PM';
-        $update->date = date("Y-m-d H:i:s");
-        }elseif(Auth::User()->id_position == 'ADMIN') {
+            $update->status_kirim = 'PM';
+            $update->date = date("Y-m-d H:i:s");
+        }elseif(Auth::User()->id_position == 'ADMIN' || Auth::User()->id_position == 'DIRECTOR') {
             $update->status_kirim = 'kirim';
             $update->date         = date("Y-m-d H:i:s");
             $produk         = $_POST['id_produks'];
@@ -531,10 +546,18 @@ class WarehouseProjectController extends Controller
 
             // $users = User::where('email','arkhab@sinergy.co.id')->first();
             // Notification::send($users, new EmailSubmitDO());
+
+            $kirim = User::select('email')->where('email', 'indra@solusindoperkasa.co.id')->first();
+
+            Mail::to($kirim)->send(new ApproveDeliveryOrder('[MSP-App] Delivery Order Disetujui',$detail_barang, $details));
             
-        }elseif(Auth::User()->id_division == 'WAREHOUSE'){
-            $update->status_kirim = 'SENT';
+        }elseif(Auth::User()->id_position == 'WAREHOUSE'){
+            $update->status_kirim = 'pending';
             $update->date = date("Y-m-d H:i:s");
+
+            $kirim = User::select('email')->where('email', 'ferry@solusindoperkasa.co.id')->first();
+
+            Mail::to($kirim)->send(new ApproveDeliveryOrder('[MSP-App] Approval Delivery Order',$detail_barang, $details));
         }
         $update->update(); 
         
@@ -625,6 +648,19 @@ class WarehouseProjectController extends Controller
                 ->where('fk_id_product',$product)
                 ->groupBy('tb_id_project.id_project')
                 ->get(),$request->product);
+    }
+
+    public function getDataDo(Request $request)
+    {
+        $detail = WarehouseProjectMSPDetail::join('inventory_delivery_msp','inventory_delivery_msp.id_transaction','=',
+                'inventory_delivery_msp_transaction.id_transaction')
+                ->join('inventory_produk_msp','inventory_produk_msp.id_product','=','inventory_delivery_msp_transaction.fk_id_product')
+                ->select('inventory_produk_msp.nama','inventory_produk_msp.kode_barang','inventory_delivery_msp_transaction.note','inventory_delivery_msp_transaction.qty_transac','inventory_produk_msp.unit','inventory_delivery_msp_transaction.unit as unit_publish','inventory_produk_msp.id_product','inventory_delivery_msp.to_agen','inventory_delivery_msp.id_transaction','inventory_delivery_msp_transaction.id_detail_do_msp','inventory_produk_msp.qty','inventory_delivery_msp.created_at', 'inventory_produk_msp.qty_sisa_submit')
+                ->where('inventory_delivery_msp_transaction.id_transaction',$request->id)
+                ->orderBy('inventory_delivery_msp_transaction.created_at','desc')
+                ->get();
+
+        return array("data"=>$detail);
     }
 
 
@@ -891,7 +927,7 @@ class WarehouseProjectController extends Controller
         $tambah->date 			= $request['date_today'];
         $tambah->no_do          = $no_do->no;
         $tambah->id_project     = $request['id_project'];
-        if (Auth::User()->id_position == 'ADMIN' || Auth::User()->email == 'budigunawan@solusindoperkasa.co.id') {
+        if (Auth::User()->id_position == 'ADMIN' || Auth::User()->id_position == 'WAREHOUSE') {
             $tambah->status_kirim   = 'PM'; 
             $tambah->nik_pm         = $request['pm_nik'];
         }else{
@@ -1165,63 +1201,81 @@ class WarehouseProjectController extends Controller
         if(count($produk) > count($qty))
             $count = count($qty);
         else $count = count($produk);
-
-            if ($unite == 'meter') {
-                $data = array(
-                    'id_transaction' => $id_transac,
-                    'fk_id_product'  => $produk,
-                    'qty_transac'    => $qty / 300.0,
-                    'unit'           => $unit,
-                );
-            } else {
-                $data = array(
-                    'id_transaction' => $id_transac,
-                    'fk_id_product'  => $produk,
-                    'qty_transac'    => $qty,
-                    'unit'           => $unit,
-                );
-            }
-                $insertData[] = $data;
-
-                WarehouseProjectMSPDetail::insert($insertData);
-
-            if ($unite == 'meter') {
-                $datak = array(
-                    'qty_sisa_submit' => (float)$qty_awal - (float)$qty / 300.0,
-                );
-                
-                Inventory_msp::where('id_product',$produk)->update($datak);  
-            } else{
-                $datak = array(
-                    'qty_sisa_submit' => (float)$qty_awal - (float)$qty,
-                );
-                
-                Inventory_msp::where('id_product',$produk)->update($datak); 
-            }
             
-            $lastIds = WarehouseProjectMSPDetail::select('fk_id_product','qty_transac','id_detail_do_msp')->where('id_transaction',$id_transac)->first(); 
+            for ($i=0; $i < count($qty) ; $i++) { 
+                
+                $insert = new WarehouseProjectMSPDetail();
+                if ($unite == 'meter') {
+                    $insert->id_transaction = $id_transac;
+                    $insert->fk_id_product = $produk[$i];
+                    $insert->qty_transac = $qty[$i]/300.0;
+                    $insert->unit = $unit[$i];
+                    // $data = array(
+                    //     'id_transaction' => $id_transac,
+                    //     'fk_id_product'  => $produk,
+                    //     'qty_transac'    => $qty / 300.0,
+                    //     'unit'           => $unit,
+                    // );
+                } else {
+                    $insert->id_transaction = $id_transac;
+                    $insert->fk_id_product = $produk[$i];
+                    $insert->qty_transac = $qty[$i];
+                    $insert->unit = $unit[$i];
+                    // $data = array(
+                    //     'id_transaction' => $id_transac,
+                    //     'fk_id_product'  => $produk,
+                    //     'qty_transac'    => $qty,
+                    //     'unit'           => $unit,
+                    // );
+                }
+                // $insertData[] = $data;
+                // return $data;
+                $insert->save();
 
-            $tambah_ch = new Project_msp_changelog();
-            $tambah_ch->id_transaction = $id_transac;
-            $tambah_ch->to_agen        = $request['to_agen'];
-            $tambah_ch->address        = $request['add'];
-            $tambah_ch->telp           = $request['telp'];
-            $tambah_ch->fax            = $request['fax'];
-            $tambah_ch->attn           = $request['att'];
-            $tambah_ch->from           = $request['from'];
-            $tambah_ch->subj           = $request['subj'];
-            $tambah_ch->date           = date("Y-m-d H:i:s");
-            $tambah_ch->no_do          = $no_do;
-            if ($request['id_project'] != '') {
-                $tambah_ch->id_project     = $request['id_project'];
-            }else{
-                $tambah_ch->id_project     = $request['id_pro_edit'];
+                // WarehouseProjectMSPDetail::insert($data);
+
+
+                if ($unite == 'meter') {
+                    $datak = array(
+                        'qty_sisa_submit' => (float)$qty_awal[$i] - (float)$qty[$i] / 300.0,
+                    );
+                    
+                    Inventory_msp::where('id_product',$produk)->update($datak);  
+                } else{
+                    $datak = array(
+                        'qty_sisa_submit' => (float)$qty_awal[$i] - (float)$qty[$i],
+                    );
+                    
+                    Inventory_msp::where('id_product',$produk)->update($datak); 
+                }
             }
-            $tambah_ch->fk_id_product  = $produk;
-            $tambah_ch->id_detail_do   = $lastIds->id_detail_do_msp;
-            $tambah_ch->qty_transac    = $qty;
-            $tambah_ch->save();
-        
+
+            $lastIds = WarehouseProjectMSPDetail::select('fk_id_product','qty_transac','id_detail_do_msp')->where('id_transaction',$id_transac)->get(); 
+
+            foreach ($lastIds as $data) {
+                $tambah_ch = new Project_msp_changelog();
+                $tambah_ch->id_transaction = $id_transac;
+                $tambah_ch->to_agen        = $request['to_agen'];
+                $tambah_ch->address        = $request['add'];
+                $tambah_ch->telp           = $request['telp'];
+                $tambah_ch->fax            = $request['fax'];
+                $tambah_ch->attn           = $request['att'];
+                $tambah_ch->from           = $request['from'];
+                $tambah_ch->subj           = $request['subj'];
+                $tambah_ch->date           = date("Y-m-d H:i:s");
+                $tambah_ch->no_do          = $no_do;
+                if ($request['id_project'] != '') {
+                    $tambah_ch->id_project     = $request['id_project'];
+                }else{
+                    $tambah_ch->id_project     = $request['id_pro_edit'];
+                }
+                $tambah_ch->fk_id_product  = $data->fk_id_product;
+                $tambah_ch->id_detail_do   = $data->id_detail_do_msp;
+                $tambah_ch->qty_transac    = $data->qty_transac;
+                $tambah_ch->save();
+            }
+
+
         return redirect()->back()->with('update', 'Updated Delivery Order Successfully!');
 
     }
