@@ -168,6 +168,8 @@
 @endsection
 @section('script')
 	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+	<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
 
 	<script type="text/javascript">
 		var presenceLocation;
@@ -372,5 +374,5 @@
 			}
 		}
 	</script>
-	<script async defer src="https://maps.googleapis.com/maps/api/js?v=3&libraries=geometry&key={{env('GOOGLE_API_KEY_PRIVATE')}}"></script>
+	<script async defer src="https://maps.googleapis.com/maps/api/js?v=3&libraries=geometry&key={{env('GOOGLE_API_KEY')}}"></script>
 @endsection
