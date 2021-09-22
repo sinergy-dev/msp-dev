@@ -125,7 +125,7 @@
                 <form method="POST" action="{{url('/update_delivery')}}" id="modal_pr_asset" name="modal_pr_asset">
                     @csrf
                     <input type="text" name="id_transac_edit" value="{{$cek->id_transaction}}" hidden>
-                    @if(Auth::User()->id_position == 'ADMIN' || Auth::User()->email == 'budigunawan@solusindoperkasa.co.id')
+                    @if(Auth::User()->id_position == 'ADMIN' || Auth::User()->id_position == 'WAREHOUSE' || Auth::User()->id_position == 'DIRECTOR')
                     @if($details->status_kirim == 'PM')
                     <fieldset>
                         <div class="col-sm-7">
@@ -628,10 +628,13 @@
                 </table>
                 @if($details->status_kirim == '' && Auth::User()->id_division == 'PMO')
                 <button class="btn btn-sm btn-success" onclick="edit_product('{{$details->id_transaction}}')" type="submit">Publish</button>
-                @elseif($details->status_kirim == 'PM' && Auth::User()->id_position == 'ADMIN')
+                @elseif($details->status_kirim == 'PM' && Auth::User()->id_position == 'ADMIN' || Auth::User()->id_position == 'WAREHOUSE' && $details->status_kirim == 'PM')
                 <button class="btn btn-sm btn-success" onclick="edit_product('{{$details->id_transaction}}')" type="submit">Publish</button>
-                @elseif($details->status_kirim == 'kirim' && Auth::User()->id_division == 'WAREHOUSE')
+                @elseif($details->status_kirim == 'kirim' && Auth::User()->id_position == 'WAREHOUSE')
                 <button class="btn btn-sm btn-success" onclick="edit_product('{{$details->id_transaction}}')" type="submit">Send</button>
+                @elseif(Auth::User()->id_position == 'DIRECTOR' && $details->status_kirim == 'pending')
+                <button name="accept" id="accept_do" class="btn btn-success btn-sm" type="submit" value="{{$details->id_transaction}}" >Accept</button>
+                <!-- <button class="btn btn-sm btn-danger" type="submit" >Decline</button> -->
                 @endif
                 </form>
             </div>
@@ -726,11 +729,11 @@
                                     <th width="10%">Unit</th>
                                     <th width="15%"></th>
                                     <th width="30%">Qty</th>
-                                    <th><a href="javascript:void(0);" style="font-size:18px;display: none;" id="addMorelagi"><span class="fa fa-plus"></span></a></th>
+                                    <th><a href="javascript:void(0);" style="font-size:18px; display: none;"  id="addMore"><span class="fa fa-plus"></span></a></th>
                                 </tr>
                                 <tr>
                                     <td style="margin-bottom: 50px;" width="200px!important">
-                                        <br><select class="form-control" name="product" id="product" data-rowid="0" style="font-size: 14px">
+                                        <br><select class="form-control" name="product[]" id="product" data-rowid="0" style="font-size: 14px">
                                             <option>-- Select Product --</option>
                                             @foreach($barang as $data)
                                             <option value="{{$data->id_product}}">{{$data->kode_barang}} - {{$data->nama}}</option>
@@ -739,15 +742,15 @@
                                     </td>
                                     <td>
                                         <br>
-                                        <input type="text" name="ket_aja" id="ket0" class="form-control ket" data-rowid="0" readonly>
+                                        <input type="text" name="ket_aja[]" id="ket0" class="form-control ket" data-rowid="0" readonly>
                                     </td>
                                     <td style="margin-bottom: 50px">
                                         <br>
-                                        <input type="text" class="form-control unit" placeholder="Unit" name="unit" id="unit0" data-rowid="0" readonly>
+                                        <input type="text" class="form-control unit" placeholder="Unit" name="unit[]" id="unit0" data-rowid="0" readonly>
                                     </td>
                                     <td style="margin-bottom: 50px">
                                         <br>
-                                        <select class="form-control unite" data-rowid="0" name="unite" id="unite" style="display: none;">
+                                        <select class="form-control unite" data-rowid="0" name="unite" id="unite[]" style="display: none;">
                                             <option value="" readonly>Select</option>
                                             <option value="roll">roll</option>
                                             <option value="meter">meter</option>
@@ -755,7 +758,7 @@
                                     </td>
                                     <td style="margin-bottom: 50px">
                                         <br>
-                                        <input type="number" class="form-control qty" placeholder="Qty" name="qty" id="qty" step="any" data-rowid="0" required>
+                                        <input type="number" class="form-control qty" placeholder="Qty" name="qty[]" id="qty" step="any" data-rowid="0" required>
                                     </td>
                                     <td>
                                         <a href='javascript:void(0);' class='remove'><span class='fa fa-times' style="font-size: 18px;margin-top: 20px;color: red;"></span></a>
