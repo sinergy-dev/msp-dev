@@ -237,7 +237,6 @@ return [
         App\Providers\RouteServiceProvider::class,
         App\Providers\DynamicClassname::class,
         Barryvdh\DomPDF\ServiceProvider::class,
-        Maatwebsite\Excel\ExcelServiceProvider::class,
         LaravelFCM\FCMServiceProvider::class,
 
     ],
