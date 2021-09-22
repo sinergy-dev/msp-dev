@@ -10,12 +10,19 @@ use Excel;
 use App\PR_MSP;
 use App\TB_Contact;
 
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
 class QuoteController extends Controller
 {
 	public function __construct()
-        {
+    {
         $this->middleware('auth');
-        }
+    }
     
 	public function index()
 	{
@@ -27,13 +34,11 @@ class QuoteController extends Controller
         $position = DB::table('users')->select('id_position')->where('nik', $nik)->first();
         $pos = $position->id_position;
 
-        $pops = QuoteMSP::select('quote_number')->orderBy('id_quote','desc')->first();
-
-        // $pops2 = QuoteMSP::select('quote_number')->where('status_backdate', 'F')->orderBy('quote_number', 'desc')->first();
+        $pops = QuoteMSP::select('quote_number')->orderBy('created_at','desc')->first();
 
 		$datas = QuoteMSP::join('users', 'users.nik', '=', 'tb_quote_msp.nik')
                         ->join('tb_contact', 'tb_contact.id_customer', '=', 'tb_quote_msp.customer_id')
-                        ->select('id_quote','quote_number','position','type_of_letter','date','to','attention','title','project','status', 'description', 'amount','note', 'tb_quote_msp.nik', 'name', 'month', 'customer_legal_name')
+                        ->select('id_quote','quote_number','position','type_of_letter','date','to','attention','title','project','tb_quote_msp.status', 'description', 'amount','note', 'tb_quote_msp.nik', 'name', 'month', 'customer_legal_name')
                         ->orderBy('id_quote','desc')
                         ->get();
 
@@ -43,6 +48,10 @@ class QuoteController extends Controller
         $counts = count($count);*/
 
         $customer = TB_Contact::select('brand_name', 'customer_legal_name','id_customer')->get();
+
+        $notifClaim = '';
+        $counts = '';
+        $count = '';
 
         // if ($ter != null) {
         //     $notif = DB::table('sales_lead_register')
@@ -200,7 +209,7 @@ class QuoteController extends Controller
                             ->get();
         }
 
-        return view('quote/quote',compact('notif','datas','notifOpen','notifsd','notiftp', 'notifClaim', 'counts', 'count','pops', 'pops2', 'customer'));
+        return view('quote/quote',compact('notif','datas','notifOpen','notifsd','notiftp', 'notifClaim', 'counts', 'count','pops', 'customer'));
 	}
 
 	public function create()
@@ -594,66 +603,68 @@ class QuoteController extends Controller
 
     public function donwloadExcelQuote(Request $request)
     {
-    	$nama = 'Data Admin (Quotation) '.date('Y');
-        Excel::create($nama, function ($excel) use ($request) {
-        $excel->sheet('Quote Number', function ($sheet) use ($request) {
-        
-        $sheet->mergeCells('A1:O1');
+    	$spreadsheet = new Spreadsheet();
 
-        $sheet->row(1, function ($row) {
-            $row->setFontFamily('Calibri');
-            $row->setFontSize(11);
-            $row->setAlignment('center');
-            $row->setFontWeight('bold');
-        });
+        $prSheet = new Worksheet($spreadsheet,'Quote Number');
+        $spreadsheet->addSheet($prSheet);
+        $spreadsheet->removeSheetByIndex(0);
+        $sheet = $spreadsheet->getActiveSheet();
 
-        $sheet->row(1, array('Quote Number'));
+        $sheet->mergeCells('A1:N1');
+        $normalStyle = [
+            'font' => [
+                'name' => 'Calibri',
+                'size' => 11
+            ],
+        ];
 
-        $sheet->row(2, function ($row) {
-            $row->setFontFamily('Calibri');
-            $row->setFontSize(11);
-            $row->setFontWeight('bold');
-        });
+        $titleStyle = $normalStyle;
+        $titleStyle['alignment'] = ['horizontal' => Alignment::HORIZONTAL_CENTER];
+        $titleStyle['font']['bold'] = true;
+
+        $sheet->getStyle('A1:N1')->applyFromArray($titleStyle);
+        $sheet->setCellValue('A1','Quote Number');
+
+        $headerStyle = $normalStyle;
+        $headerStyle['font']['bold'] = true;
+        $sheet->getStyle('A2:N2')->applyFromArray($headerStyle);;
+
+        $headerContent = ["NO", "QUOTE NUMBER", "POSITION", "TYPE OF LETTER", "MONTH", "DATE", "TO", "ATTENTION", "TITLE", "PROJECT", "DESCRIPTION", "NAME", "AMOUNT", "PROJECT TYPE"];
+        $sheet->fromArray($headerContent,NULL,'A2');
+
+        $year = date('Y');
 
         $datas = QuoteMSP::join('users', 'users.nik', '=', 'tb_quote_msp.nik')
-                    ->select('quote_number','position','type_of_letter', 'month', 'date', 'to', 'attention', 'title','project','description','name','project_type', 'amount')
-                    ->get();
+                ->join('tb_contact', 'tb_quote_msp.customer_id', '=', 'tb_contact.id_customer')
+                ->select('quote_number','position','type_of_letter', 'month', 'date', 'brand_name', 'attention', 'title','project','description','name','amount', 'project_type')
+                ->whereYear('date', $year)
+                ->get();
 
-       // $sheet->appendRow(array_keys($datas[0]));
-            $sheet->row($sheet->getHighestRow(), function ($row) {
-                $row->setFontWeight('bold');
-            });
+        foreach ($datas as $key => $eachQuote) {
+            $sheet->fromArray(array_merge([$key + 1],array_values($eachQuote->toArray())),NULL,'A' . ($key + 3));
+        }
 
-             $datasheet = array();
-             $datasheet[0]  =   array("No", "No Quote", "Position", "Type of Letter", "Month",  "Date", "To" , "Attention", "Title", "Project", "Description", "From", "Amount","Project Type");
-             $i=1;
+        $sheet->getColumnDimension('A')->setAutoSize(true);
+        $sheet->getColumnDimension('B')->setAutoSize(true);
+        $sheet->getColumnDimension('C')->setAutoSize(true);
+        $sheet->getColumnDimension('D')->setAutoSize(true);
+        $sheet->getColumnDimension('E')->setAutoSize(true);
+        $sheet->getColumnDimension('F')->setAutoSize(true);
+        $sheet->getColumnDimension('G')->setAutoSize(true);
+        $sheet->getColumnDimension('H')->setAutoSize(true);
+        $sheet->getColumnDimension('I')->setAutoSize(true);
+        $sheet->getColumnDimension('J')->setAutoSize(true);
+        $sheet->getColumnDimension('K')->setAutoSize(true);
+        $sheet->getColumnDimension('L')->setAutoSize(true);
+        $sheet->getColumnDimension('M')->setAutoSize(true);
+        $sheet->getColumnDimension('N')->setAutoSize(true);
 
-            foreach ($datas as $data) {
-
-               // $sheet->appendrow($data);
-              $datasheet[$i] = array(
-                            $i,
-                            $data['quote_number'],
-                            $data['position'],
-                            $data['type_of_letter'],
-                            $data['month'],
-                            $data['date'],
-                            $data['to'],
-                            $data['attention'],
-                            $data['title'],
-                            $data['project'],
-                            $data['description'],
-                            $data['name'],
-                            $data['amount'],
-                            $data['project_type']
-                        );
-              
-              $i++;
-            }
-
-            $sheet->fromArray($datasheet);
-        });
-
-        })->export('xls');
+        $fileName = 'Data Admin (Quotation) ' . date('Y') . '.xlsx';
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="' . $fileName . '"');
+        header('Cache-Control: max-age=0');
+        
+        $writer = new Xlsx($spreadsheet);
+        return $writer->save("php://output");
     }
 }
