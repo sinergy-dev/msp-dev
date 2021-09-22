@@ -74,11 +74,13 @@
 		      <option>--Select Filter--</option>
 		    </select>
 	  </div> -->
+
+      <h3 class="box-title"><i class="fa fa-table"></i>&nbspDelivery Order Table</h3>
       
       @if(Auth::User()->id_position == 'WAREHOUSE')
-      <a href="{{url('/return_produk_delivery')}}"><button class="btn btn-sm btn-danger pull-right margin-left" style="width: 110px"><i class="fa fa-plus"> </i>&nbsp Return Barang</button>
+        <a href="{{url('/return_produk_delivery')}}"><button class="btn btn-sm btn-danger pull-right margin-left" style="width: 110px"><i class="fa fa-plus"> </i>&nbsp Return Barang</button>
+        <a href="{{url('/add/project_delivery')}}"><button class="btn btn-sm btn-primary pull-right" style="width: 110px"><i class="fa fa-plus"> </i>&nbsp Delivery Order</button></a>
       @endif
-      <a href="{{url('/add/project_delivery')}}"><button class="btn btn-sm btn-primary pull-right" style="width: 110px"><i class="fa fa-plus"> </i>&nbsp Delivery Order</button></a>
     </div>
 
     <div class="box-body">
@@ -121,9 +123,9 @@
               <td>{{$no++}}</td>
               <td class="btn-ini">
                 @if(Auth::User()->id_division == 'PMO')
-                  @if($data->status_kirim == '')
-                  <span style="background-color:#ff6600;color: white">PENDING</span>
-                  @elseif($data->status_kirim == 'PM')
+                  @if($data->status_kirim == 'PM')
+                  <span style="background-color:#990000;color: white">PENDING</span>
+                  @elseif($data->status_kirim == 'pending')
                   <span style="background-color:#990000;color: white">PENDING</span>
                   @elseif($data->status_kirim == 'SENT')
                   <span style="background-color:#006600;color: white">SENT</span>
@@ -131,9 +133,9 @@
                   <span style="background-color:#3399ff;color: white">Published</span>
                   @endif
                 @elseif(Auth::User()->id_position == 'ADMIN')
-                  @if($data->status_kirim == '')
-                  <span style="background-color:#990000;color: white">PENDING</span>
-                  @elseif($data->status_kirim == 'PM')
+                  @if($data->status_kirim == 'PM')
+                  <span style="background-color:#ff6600;color: white">PENDING</span>
+                  @elseif($data->status_kirim == 'pending')
                   <span style="background-color:#ff6600;color: white">PENDING</span>
                   @elseif($data->status_kirim == 'SENT')
                   <span style="background-color:#006600;color: white">SENT</span>
@@ -141,9 +143,9 @@
                   <span style="background-color:#3399ff;color: white">Published</span>
                   @endif
                 @else
-                  @if($data->status_kirim == '')
+                  @if($data->status_kirim == 'PM')
                   <span style="background-color:#ff6600;color: white">PENDING</span>
-                  @elseif($data->status_kirim == 'PM')
+                  @elseif($data->status_kirim == 'pending')
                   <span style="background-color:#ff6600;color: white">PENDING</span>
                   @elseif($data->status_kirim == 'SENT')
                   <span style="background-color:#006600;color: white">SENT</span>
@@ -161,17 +163,21 @@
               <td>{{$data->name}}</td>
               @endif
               <td>
-                <a href="{{url('/detail/do/msp',$data->id_transaction)}}"><button class="btn btn-sm btn-primary">Detail</button></a>
+                <a href="{{url('/detail/do/msp',$data->id_transaction)}}"><button class="btn btn-sm btn-primary" style="width:60px">Detail</button></a>
                 <a href="{{action('WarehouseProjectController@downloadPdfDO',$data->id_transaction)}}" target="_blank" onclick="print()"><button class="btn btn-sm btn-success" style="width: 60px"><b><i class="fa fa-print"></i> Pdf </b></button></a>
                 @if($data->status_kirim == 'kirim' || $data->status_kirim == 'SENT')
-                  @if(Auth::User()->id_division != 'WAREHOUSE')
+                  @if(Auth::User()->id_position == 'WAREHOUSE')
                     <a href="{{url('/copy/do/msp',$data->id_transaction)}}"><button class="btn btn-sm btn-warning" style="width: 60px"><b><i class="fa fa-copy"></i>&nbspCopy</button></b></a>
                   @endif
                 @else
-                  @if(Auth::User()->id_division != 'WAREHOUSE')
+                  @if(Auth::User()->id_position == 'WAREHOUSE')
                     <button class="btn btn-sm btn-warning disabled" style="width: 60px"><b><i class="fa fa-copy"></i>&nbspCopy</b></button>
                   @endif
                 @endif
+                <!-- @if(Auth::User()->id_position == 'DIRECTOR' && $data->status_kirim == 'pending')
+                  <button name="accept" id="accept_do" class="btn btn-info btn-sm" style="width: 80px" value="{{$data->id_transaction}}"><b><i class="fa fa-check">&nbspApprove</i></b></button>
+                  <button class="btn btn-sm btn-danger" style="width: 70px;" data-target="#reason_decline" data-toggle="modal"><i class="fa fa-times">&nbspDecline</i></button>
+                @endif -->
               </td>
               <td hidden="">
               </td>
@@ -181,6 +187,51 @@
           <tfoot>
           </tfoot>
         </table>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="modal fade" id="modal_approve_do" role="dialog">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Form Approve Delivery Order</h4>
+        </div>
+        <form method="" action="" id="approve_do" name="">
+          @csrf
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-sm-6">
+                <div class="form-group">
+                  <label for="">To</label>
+                  <input type="text" class="form-control" name="to_do" id="to_do">
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <table class="table table-bordered">
+                <thead>
+                  <tr>
+                    <th rowspan="2" style="text-align: center;vertical-align:center;">MSP Code</th>
+                    <th rowspan="2" style="text-align: center;vertical-align:center;" width="40%">Description</th>
+                    <th colspan="3" style="text-align: center;vertical-align:center;">Qty</th>
+                    <th rowspan="2" style="text-align: center;vertical-align:center;">Unit</th>
+                  </tr>
+                </thead>
+                <tbody id="mytable">
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <table class="">
+                <tbody id="footer-table">
+                  
+                </tbody>
+            </table>
+          </div>
+        </form>
       </div>
     </div>
   </div>
@@ -232,7 +283,7 @@
       });
     }
     @else
-    $('#data_Table').DataTable({
+    var table = $('#data_Table').DataTable({
     	pageLength:25,
     })
     @endif
@@ -252,5 +303,67 @@
     {
       window.print();
     }
+
+    $('#accept_do').click(function(){
+      var value = $('#accept_do').val();
+
+      $('#modal_approve_do').modal('show')
+      $.ajax({
+        type:"GET",
+        url:"{{url('/inventory/getDataDo')}}",
+        data:{
+          id:value,
+        },
+        success:function(result){
+          console.log(result)
+          $("#to_do").val(result.data[0].to_agen);
+          $('#mytable').empty();
+          var table = "";
+          $.each(result[0], function(key, value){
+            table = table + '<tr>';
+              table = table + '<td >' +'<input type="text" name="id_produks[]" style="width:80px;" class="transparant" value="'+value.kode_barang+'" readonly>'+ '</td>';
+              table = table + '<td >' +'<textarea name="name_product_edit[]" style="width:300px" class="transparant" readonly>'+value.nama+'</textarea>'+'</td>';
+              table = table + '<td >' +'<input type="number" name="qty_before[]" id="qty_katalog" class="qty_katalog" style="width:25px;height:30px;border:none;" value="'+value.qty_transac+'" readonly>'+ '</td>';
+              table = table + '<td >' +'<input type="text" name="unit_publish[]" style="width:30px" class="transparant" value="'+value.unit+'" readonly>'+ '</td>';
+            table = table + '</tr>';
+            // console.log(value.msp_code);
+          });
+          $('#mytable').append(table);
+        }
+      })
+    });
+
+    // $('#accept_do').on('click',function(e){
+    //   console.log($('#accept_do').val());
+    //   var id = $('#accept_do').val();
+
+    //   $.ajax({
+    //       type:"GET",
+    //       url:'/inventory/getDataDo?id=' + id,
+    //       data:{
+    //         id:this.value,
+    //       },
+    //       success: function(result){
+    //         $('#mytable').empty();
+
+    //         var table = "";
+
+    //         $.each(result[0], function(key, value){
+    //           table = table + '<tr>';
+    //             table = table + '<td >' +'<input type="text" name="id_produks[]" style="width:80px;" class="transparant" value="'+value.kode_barang+'" readonly>'+ '</td>';
+    //             table = table + '<td >' +'<textarea name="name_product_edit[]" style="width:300px" class="transparant" readonly>'+value.nama+'</textarea>'+'</td>';
+    //             table = table + '<td >' +'<input type="number" name="qty_before[]" id="qty_katalog" class="qty_katalog" style="width:25px;height:30px;border:none;" value="'+value.qty_transac+'" readonly>'+ '</td>';
+    //             table = table + '<td >' +'<input type="text" name="unit_publish[]" style="width:30px" class="transparant" value="'+value.unit+'" readonly>'+ '</td>';
+    //           table = table + '</tr>';
+    //           // console.log(value.msp_code);
+    //         });
+
+    //         $('#mytable').append(table);
+             
+    //       }
+    //   });
+      
+    // });
+
   </script>
 @endsection
